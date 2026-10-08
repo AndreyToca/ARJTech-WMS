@@ -1,0 +1,35 @@
+-- =============================================================
+-- BANCO DE DADOS DO WMS
+-- Cada um cria a(s) tabela(s) do seu módulo NESTE arquivo.
+-- Desenhem as tabelas JUNTOS na primeira reunião antes de começar.
+-- =============================================================
+--
+-- PASSO A PASSO
+-- 1. Criar o banco "wms" e selecionar ele (Andrey).
+-- 2. Criar as tabelas NESTA ORDEM (uma depende da outra):
+--
+--    a) usuarios   — Andrey
+--       id, nome, email (único), senha, perfil
+--
+--    b) produtos   — Ygor
+--       id, codigo (único), nome, unidade
+--
+--    c) enderecos  — Ygor
+--       id, codigo (único), rua, prateleira, nivel
+--
+--    d) estoque    — Felipe
+--       id, produto_id, endereco_id, quantidade
+--       (produto_id e endereco_id são chaves estrangeiras)
+--
+--    e) entradas   — Lucas
+--       id, produto_id, endereco_id, quantidade, nota_fiscal, data, usuario_id
+--
+--    f) saidas     — Gabriel
+--       id, produto_id, endereco_id, quantidade, cliente, status, data, usuario_id
+--
+-- 3. No final do arquivo, cada um coloca alguns INSERTs de exemplo
+--    para o grupo ter dados de teste.
+-- 4. Para rodar: abrir no MySQL Workbench (ou terminal) e executar o arquivo todo.
+-- 5. Mudou uma tabela? Avise no grupo e suba no Git, porque todos precisam rodar de novo.
+--
+-- =============================================================
