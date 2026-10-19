@@ -52,7 +52,7 @@ async function somarEstoque(produtoId, enderecoId, quantidade) {
     }
 }
 
-// 3. Criar a função de subtrair estoque
+// 2.1. Criar a função de subtrair estoque
 async function subtrairEstoque(produtoId, enderecoId, quantidade) {
     try {
         //Verificar se o produto já existe neste endereço
@@ -88,7 +88,7 @@ async function subtrairEstoque(produtoId, enderecoId, quantidade) {
     }
 }
 
-// 4. Criar a função de listaer estoque
+// 3. Criar a função de listar estoque
 async function listarEstoque(req, res) {
     try {
         //listar produto, endereco e quantidade
@@ -105,6 +105,7 @@ async function listarEstoque(req, res) {
     }
 }
 
+// 4. Criar a função de listar por produto
 async function saldoPorProduto(req, res) {
     try {
 
@@ -124,7 +125,7 @@ async function saldoPorProduto(req, res) {
     }
 }
 
-// X. Exportar TODAS as funções no final do arquivo
+// 4. Exportar TODAS as funções no final do arquivo
 module.exports = {
     somarEstoque,
     subtrairEstoque,
