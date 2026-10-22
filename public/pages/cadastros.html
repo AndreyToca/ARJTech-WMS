@@ -17,10 +17,13 @@
     </header>
 
     <main class="cadastros">
-        <!-- Cadastro de produtos -->
+
+        <!-- CADASTRO DE PRODUTOS -->
         <section class="cartao">
             <h2>Cadastro de produtos</h2>
-            <p class="descricao">Cadastre e gerencie os produtos do estoque.</p>
+            <p class="descricao">
+                Cadastre e gerencie os produtos do estoque.
+            </p>
 
             <form id="form-produto">
                 <input type="hidden" id="produto-id">
@@ -49,13 +52,15 @@
 
                 <div class="campo-formulario">
                     <label for="produto-unidade">Unidade</label>
-                    <input
-                        type="text"
-                        id="produto-unidade"
-                        maxlength="20"
-                        placeholder="Ex.: UN ou CX"
-                        required
-                    >
+                    <select id="produto-unidade" required>
+                        <option value="">Selecione a unidade</option>
+                        <option value="UN">UN — Unidade</option>
+                        <option value="CX">CX — Caixa</option>
+                        <option value="KG">KG — Quilograma</option>
+                        <option value="L">L — Litro</option>
+                        <option value="M">M — Metro</option>
+                        <option value="PCT">PCT — Pacote</option>
+                    </select>
                 </div>
 
                 <div class="botoes-formulario">
@@ -88,27 +93,18 @@
             </div>
         </section>
 
-        <!-- Separador -->
         <hr class="separador">
 
-        <!-- Cadastro de endereços -->
+        <!-- CADASTRO DE ENDEREÇOS -->
         <section class="cartao">
             <h2>Cadastro de endereços</h2>
-            <p class="descricao">Organize ruas, prateleiras e níveis do armazém.</p>
+            <p class="descricao">
+                Informe a rua, a prateleira e o nível.
+                O código será montado automaticamente.
+            </p>
 
             <form id="form-endereco">
                 <input type="hidden" id="endereco-id">
-
-                <div class="campo-formulario">
-                    <label for="endereco-codigo">Código do endereço</label>
-                    <input
-                        type="text"
-                        id="endereco-codigo"
-                        maxlength="20"
-                        placeholder="Ex.: A-01-1"
-                        required
-                    >
-                </div>
 
                 <div class="campo-formulario">
                     <label for="endereco-rua">Rua</label>
@@ -138,7 +134,18 @@
                         type="text"
                         id="endereco-nivel"
                         maxlength="10"
-                        placeholder="Ex.: 1"
+                        placeholder="Ex.: 2"
+                        required
+                    >
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="endereco-codigo">Código gerado</label>
+                    <input
+                        type="text"
+                        id="endereco-codigo"
+                        placeholder="Preencha os campos acima"
+                        readonly
                         required
                     >
                 </div>
@@ -173,8 +180,43 @@
                 </table>
             </div>
         </section>
+
     </main>
 
     <script src="/js/cadastros.js"></script>
+
+    <script>
+        // Gera o código do endereço a partir dos três campos.
+        (() => {
+            const rua = document.getElementById('endereco-rua');
+            const prateleira = document.getElementById('endereco-prateleira');
+            const nivel = document.getElementById('endereco-nivel');
+            const codigo = document.getElementById('endereco-codigo');
+            const formulario = document.getElementById('form-endereco');
+
+            function atualizarCodigo() {
+                const valores = [
+                    rua.value.trim().toUpperCase(),
+                    prateleira.value.trim().toUpperCase(),
+                    nivel.value.trim().toUpperCase()
+                ];
+
+                codigo.value = valores.every(Boolean)
+                    ? valores.join('-')
+                    : '';
+            }
+
+            rua.addEventListener('input', atualizarCodigo);
+            prateleira.addEventListener('input', atualizarCodigo);
+            nivel.addEventListener('input', atualizarCodigo);
+
+            formulario.addEventListener('reset', () => {
+                setTimeout(atualizarCodigo, 0);
+            });
+
+            atualizarCodigo();
+        })();
+    </script>
+
 </body>
 </html>

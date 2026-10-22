@@ -205,24 +205,34 @@ async function buscarEndereco(req, res) {
 }
 
 // POST /api/cadastros/enderecos
-async function criarEndereco(req, res) {
-  const codigo = String(req.body.codigo || '').trim();
-  const rua = String(req.body.rua || '').trim();
-  const prateleira = String(req.body.prateleira || '').trim();
-  const nivel = String(req.body.nivel || '').trim();
 
-  if (!codigo || !rua || !prateleira || !nivel) {
+async function criarEndereco(req, res) {
+  const rua = String(req.body.rua || '').trim().toUpperCase();
+  const prateleira = String(req.body.prateleira || '').trim().toUpperCase();
+  const nivel = String(req.body.nivel || '').trim().toUpperCase();
+
+  if (!rua || !prateleira || !nivel) {
     return res.status(400).json({
-      erro: 'Código, rua, prateleira e nível são obrigatórios.'
+      erro: 'Rua, prateleira e nível são obrigatórios.'
     });
   }
 
   if (
-    codigo.length > 20 || rua.length > 10 ||
-    prateleira.length > 10 || nivel.length > 10
+    rua.length > 10 ||
+    prateleira.length > 10 ||
+    nivel.length > 10
   ) {
     return res.status(400).json({
-      erro: 'Um ou mais campos excedem o tamanho permitido.'
+      erro: 'Rua, prateleira ou nível excedem o tamanho permitido.'
+    });
+  }
+
+  // O código é gerado automaticamente pelo sistema.
+  const codigo = `${rua}-${prateleira}-${nivel}`;
+
+  if (codigo.length > 20) {
+    return res.status(400).json({
+      erro: 'O código gerado excede o tamanho permitido.'
     });
   }
 
@@ -247,27 +257,40 @@ async function criarEndereco(req, res) {
 }
 
 // PUT /api/cadastros/enderecos/:id
+
 async function editarEndereco(req, res) {
   const id = idValido(req.params.id);
-  if (!id) return res.status(400).json({ erro: 'ID inválido.' });
 
-  const codigo = String(req.body.codigo || '').trim();
-  const rua = String(req.body.rua || '').trim();
-  const prateleira = String(req.body.prateleira || '').trim();
-  const nivel = String(req.body.nivel || '').trim();
+  if (!id) {
+    return res.status(400).json({ erro: 'ID inválido.' });
+  }
 
-  if (!codigo || !rua || !prateleira || !nivel) {
+  const rua = String(req.body.rua || '').trim().toUpperCase();
+  const prateleira = String(req.body.prateleira || '').trim().toUpperCase();
+  const nivel = String(req.body.nivel || '').trim().toUpperCase();
+
+  if (!rua || !prateleira || !nivel) {
     return res.status(400).json({
-      erro: 'Código, rua, prateleira e nível são obrigatórios.'
+      erro: 'Rua, prateleira e nível são obrigatórios.'
     });
   }
 
   if (
-    codigo.length > 20 || rua.length > 10 ||
-    prateleira.length > 10 || nivel.length > 10
+    rua.length > 10 ||
+    prateleira.length > 10 ||
+    nivel.length > 10
   ) {
     return res.status(400).json({
-      erro: 'Um ou mais campos excedem o tamanho permitido.'
+      erro: 'Rua, prateleira ou nível excedem o tamanho permitido.'
+    });
+  }
+
+  // Recalcula o código sempre que o endereço for editado.
+  const codigo = `${rua}-${prateleira}-${nivel}`;
+
+  if (codigo.length > 20) {
+    return res.status(400).json({
+      erro: 'O código gerado excede o tamanho permitido.'
     });
   }
 
@@ -280,10 +303,18 @@ async function editarEndereco(req, res) {
     );
 
     if (resultado.affectedRows === 0) {
-      return res.status(404).json({ erro: 'Endereço não encontrado.' });
+      return res.status(404).json({
+        erro: 'Endereço não encontrado.'
+      });
     }
 
-    return res.json({ mensagem: 'Endereço atualizado com sucesso.' });
+    return res.json({
+      mensagem: 'Endereço atualizado com sucesso.',
+      codigo,
+      rua,
+      prateleira,
+      nivel
+    });
   } catch (erro) {
     return erroBanco(res, erro);
   }
