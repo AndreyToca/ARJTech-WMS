@@ -1,30 +1,180 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS - Cadastros</title>
-  <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARJTech-WMS | Cadastros</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/cadastros.css">
 </head>
 <body>
-  <!--
-    TELA: Cadastros  —  Responsável: YGOR
-    PASSO A PASSO
-    1. Criar duas abas ou duas seções: Produtos e Endereços.
-    2. Em cada seção: formulário de cadastro + botão "Salvar".
-    3. Abaixo do formulário: tabela listando os itens com botões Editar e Excluir.
-    4. A lógica fica no arquivo public/js/cadastros.js.
-  -->
 
-  <header>
-    <a href="/index.html">WMS</a>
-    <h1>Cadastros</h1>
-  </header>
+    <header>
+        <a href="/">← Voltar</a>
+        <h1>Cadastros</h1>
+    </header>
 
-  <main>
-    <!-- Monte a tela aqui -->
-  </main>
+    <main class="cadastros">
+        <!-- Cadastro de produtos -->
+        <section class="cartao">
+            <h2>Cadastro de produtos</h2>
+            <p class="descricao">Cadastre e gerencie os produtos do estoque.</p>
 
-  <script src="/js/cadastros.js"></script>
+            <form id="form-produto">
+                <input type="hidden" id="produto-id">
+
+                <div class="campo-formulario">
+                    <label for="produto-codigo">Código do produto</label>
+                    <input
+                        type="text"
+                        id="produto-codigo"
+                        maxlength="50"
+                        placeholder="Ex.: P005"
+                        required
+                    >
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="produto-nome">Nome do produto</label>
+                    <input
+                        type="text"
+                        id="produto-nome"
+                        maxlength="150"
+                        placeholder="Ex.: Caixa de papelão"
+                        required
+                    >
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="produto-unidade">Unidade</label>
+                    <input
+                        type="text"
+                        id="produto-unidade"
+                        maxlength="20"
+                        placeholder="Ex.: UN ou CX"
+                        required
+                    >
+                </div>
+
+                <div class="botoes-formulario">
+                    <button type="submit" id="botao-produto">
+                        Salvar produto
+                    </button>
+                    <button type="reset" class="botao-secundario">
+                        Limpar
+                    </button>
+                </div>
+            </form>
+
+            <p id="mensagem-produto" class="mensagem" role="status"></p>
+
+            <h3>Produtos cadastrados</h3>
+
+            <div class="tabela-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Unidade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-produtos"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Separador -->
+        <hr class="separador">
+
+        <!-- Cadastro de endereços -->
+        <section class="cartao">
+            <h2>Cadastro de endereços</h2>
+            <p class="descricao">Organize ruas, prateleiras e níveis do armazém.</p>
+
+            <form id="form-endereco">
+                <input type="hidden" id="endereco-id">
+
+                <div class="campo-formulario">
+                    <label for="endereco-codigo">Código do endereço</label>
+                    <input
+                        type="text"
+                        id="endereco-codigo"
+                        maxlength="20"
+                        placeholder="Ex.: A-01-1"
+                        required
+                    >
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="endereco-rua">Rua</label>
+                    <input
+                        type="text"
+                        id="endereco-rua"
+                        maxlength="10"
+                        placeholder="Ex.: A"
+                        required
+                    >
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="endereco-prateleira">Prateleira</label>
+                    <input
+                        type="text"
+                        id="endereco-prateleira"
+                        maxlength="10"
+                        placeholder="Ex.: 01"
+                        required
+                    >
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="endereco-nivel">Nível</label>
+                    <input
+                        type="text"
+                        id="endereco-nivel"
+                        maxlength="10"
+                        placeholder="Ex.: 1"
+                        required
+                    >
+                </div>
+
+                <div class="botoes-formulario">
+                    <button type="submit" id="botao-endereco">
+                        Salvar endereço
+                    </button>
+                    <button type="reset" class="botao-secundario">
+                        Limpar
+                    </button>
+                </div>
+            </form>
+
+            <p id="mensagem-endereco" class="mensagem" role="status"></p>
+
+            <h3>Endereços cadastrados</h3>
+
+            <div class="tabela-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Código</th>
+                            <th>Rua</th>
+                            <th>Prateleira</th>
+                            <th>Nível</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-enderecos"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/cadastros.js"></script>
 </body>
 </html>
