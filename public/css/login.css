@@ -1,0 +1,258 @@
+/* Tela de Login — Andrey */
+
+.pagina-login {
+  --azul: #1f3a5f;
+  --azul-escuro: #0f2238;
+  --amarelo: #f5b301;
+  --cinza-texto: #5b6b80;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+}
+
+/* ==================== Cena do armazém ==================== */
+
+.cena {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--azul-escuro) 0%, var(--azul) 100%);
+  color: #fff;
+}
+
+.cena-texto { position: relative; z-index: 1; padding: 40px 48px; }
+
+.marca { display: flex; align-items: center; gap: 10px; font-size: 20px; letter-spacing: 0.5px; }
+.marca strong { color: var(--amarelo); }
+.marca-icone { width: 34px; height: 34px; }
+
+.cena h2 { margin: 48px 0 16px; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.15; }
+
+.etapas { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.etapas li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+}
+.etapas li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amarelo);
+  animation: pulsar 2s ease-in-out infinite;
+}
+.etapas li:nth-child(2)::before { animation-delay: 0.4s; }
+.etapas li:nth-child(3)::before { animation-delay: 0.8s; }
+
+.armazem { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; display: block; }
+
+/* Luzes do galpão "respirando" */
+.armazem .luz { animation: luz 6s ease-in-out infinite; }
+
+/* Sinal verde da doca e giroflex da empilhadeira */
+.armazem .sinal-doca { animation: piscar 1.6s steps(2) infinite; }
+.armazem .farol { animation: piscar 0.8s steps(2) infinite; }
+
+/* Caminhão: chega (0–25%), fica parado na doca (25–70%) e vai embora (70–100%) */
+.armazem .caminhao { animation: caminhao 16s ease-in-out infinite; }
+.armazem .roda {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: roda-caminhao 16s ease-in-out infinite;
+}
+
+/* Empilhadeira: vai até a direita, levanta o garfo, vira e volta */
+.armazem .empilhadeira { animation: empilhadeira-trajeto 12s ease-in-out infinite; }
+.armazem .empilhadeira-corpo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: empilhadeira-virar 12s linear infinite;
+}
+.armazem .garfo { animation: garfo 12s ease-in-out infinite; }
+
+@keyframes caminhao {
+  0%       { transform: translateX(-680px); }
+  25%, 70% { transform: translateX(0); }
+  100%     { transform: translateX(360px); }
+}
+/* Giros proporcionais à distância percorrida, para a roda não "patinar" */
+@keyframes roda-caminhao {
+  0%       { transform: rotate(0deg); }
+  25%, 70% { transform: rotate(3000deg); }
+  100%     { transform: rotate(4580deg); }
+}
+@keyframes empilhadeira-trajeto {
+  0%, 5%    { transform: translateX(0); }
+  45%, 55%  { transform: translateX(290px); }
+  95%, 100% { transform: translateX(0); }
+}
+@keyframes empilhadeira-virar {
+  0%, 49.9%   { transform: scaleX(1); }
+  50%, 99.9%  { transform: scaleX(-1); }
+  100%        { transform: scaleX(1); }
+}
+@keyframes garfo {
+  0%, 45%, 55%, 95%, 100% { transform: translateY(0); }
+  48%, 52%                { transform: translateY(-22px); }
+  97.5%                   { transform: translateY(-22px); }
+}
+@keyframes luz { 50% { opacity: 0.55; } }
+@keyframes piscar { 50% { opacity: 0.2; } }
+@keyframes pulsar { 50% { transform: scale(0.6); opacity: 0.5; } }
+
+/* ==================== Formulário ==================== */
+
+.lado-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+  margin: 0;
+  padding: 32px 24px;
+  background: #f4f5f7;
+}
+
+.login-cartao {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 40px 36px 32px;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(15, 34, 56, 0.12), 0 2px 6px rgba(15, 34, 56, 0.06);
+  animation: entrar 0.6s ease-out both;
+}
+
+/* Faixa zebrada amarela/azul, como as de segurança do armazém */
+.faixa-alerta {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(-45deg, var(--amarelo) 0 12px, var(--azul) 12px 24px);
+}
+
+.login-cartao h1 { margin: 0; font-size: 28px; color: var(--azul); }
+.subtitulo { margin: -12px 0 4px; color: var(--cinza-texto); font-size: 14px; }
+
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.campo label { font-size: 14px; font-weight: bold; color: #33445a; }
+
+.entrada-icone { position: relative; display: flex; align-items: center; }
+.entrada-icone > svg {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  color: #8a9bb0;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+.entrada-icone input {
+  width: 100%;
+  padding: 12px 44px 12px 40px;
+  border: 1.5px solid #d5dce5;
+  border-radius: 8px;
+  background: #f9fafc;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.entrada-icone input:focus {
+  outline: none;
+  border-color: var(--azul);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(31, 58, 95, 0.12);
+}
+.entrada-icone:focus-within > svg { color: var(--azul); }
+
+.botao-olho {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  padding: 6px;
+  background: transparent;
+  color: #8a9bb0;
+  border-radius: 6px;
+}
+.botao-olho:hover { color: var(--azul); background: #eef2f7; }
+.botao-olho svg { width: 18px; height: 18px; }
+.botao-olho .risco { display: none; }
+.botao-olho[aria-pressed="true"] .risco { display: inline; }
+
+.mensagem-erro {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 4px solid #b3261e;
+  border-radius: 6px;
+  background: #fdecea;
+  color: #b3261e;
+  font-size: 14px;
+}
+
+.botao-entrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--azul);
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.2s, transform 0.1s;
+}
+.botao-entrar:hover:not(:disabled) { background: #2a4d7a; }
+.botao-entrar:active:not(:disabled) { transform: translateY(1px); }
+.botao-entrar .seta { width: 18px; height: 18px; transition: transform 0.2s; }
+.botao-entrar:hover:not(:disabled) .seta { transform: translateX(4px); }
+
+.botao-entrar .spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+.botao-entrar.carregando { opacity: 0.85; }
+.botao-entrar.carregando .spinner { display: inline-block; }
+.botao-entrar.carregando .seta { display: none; }
+.botao-entrar.sucesso { background: #1f8a4c; opacity: 1; }
+
+/* Cartão "tremendo" quando o login falha */
+.login-cartao.tremer { animation: tremer 0.4s ease-in-out; }
+
+@keyframes entrar { from { opacity: 0; transform: translateY(16px); } }
+@keyframes girar { to { transform: rotate(360deg); } }
+@keyframes tremer {
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+/* ==================== Celular ==================== */
+
+@media (max-width: 860px) {
+  .pagina-login { grid-template-columns: 1fr; }
+  .cena { min-height: 0; }
+  .cena-texto { padding: 24px 20px 0; }
+  .cena h2 { margin: 20px 0 12px; font-size: 26px; }
+  .armazem { position: relative; margin-top: 12px; }
+  .login-cartao { padding: 32px 24px 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina-login *,
+  .pagina-login *::before { animation: none !important; transition: none !important; }
+}

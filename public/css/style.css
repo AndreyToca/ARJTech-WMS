@@ -44,3 +44,4 @@ th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
 
 input, select, button { padding: 8px; font-size: 14px; }
 button { background: #1f3a5f; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+button:disabled { opacity: 0.6; cursor: wait; }
