@@ -4,6 +4,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS - Entrada de Mercadoria</title>
+<<<<<<< HEAD
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header>
+      <nav>
+          <a href="../index.html">WMS</a>
+          <span>Menu principal</span>
+      <nav>
+ </header>
+
+<main> style='padding: 20px;">
+    <h2>Entrada de Mercadoria</h2>
+    
+    <form id="formEntrada" style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; max-width: 500px;">
+        <div style="margin-bottom: 15px;">
+            <label for="produto_id">Produto:</label><br>
+            <select id="produto_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                <option value="">Selecione um produto...</option>
+            </select>
+        </div>
+    
+        <div style="margin-bottom: 15px;">
+          <label for="endereço_id">Endereço de Armazenagem:</label><br>
+          <select id="endereço_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
+              <option value="">Selecione um Endereço...</option>
+          </select>    
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="quantidade">Quantidade:</label><br>
+            <input type="number" id"quantidade" min="1" required style="width: 100%; padding: 8px; margin-top: 5px;"
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="nota_fiscal">Nota Fiscal:</label><br>
+            <imput type="text" id="nota_fiscal" style="width: 100%; padding: 8px; margin-top: 5px;">
+        </div>
+        
+        <buttom type="submit" style="background: #004080; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;"Registrar Entrada</button>
+      </form>
+
+      <h3>Histórico de Entradas</h3>
+      <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+          <thead>
+              <tr style="background: #004080; color: white; text-align: left;">
+                  <th style="padding: 8px;">ID</th>
+                  <th style="padding: 8px;">Produto ID</th>
+                  <th style="padding: 8px;">Endereço ID</th>
+                  <th style="padding: 8px;">Quantidade</th>
+                  <th style="padding: 8px;">Nota Fiscal</th>
+                  <th style="padding: 8px;">Data</th>
+              </tr>    
+          </thead>
+          <tbody id="tabelaEntradas">
+          </tbody  
+      </table>    
+=======
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -24,6 +82,7 @@
 
   <main>
     <!-- Monte a tela aqui -->
+>>>>>>> origin/main
   </main>
 
   <script src="/js/entrada.js"></script>

@@ -28,10 +28,16 @@
 
 const express = require('express');
 const router = express.Router();
+<<<<<<< HEAD
+// const controller = require('./estoque.controller');
+
+// Rotas deste módulo vão aqui (passo 5)
+=======
 const controller = require('./estoque.controller');
 
 // Rotas deste módulo vão aqui (passo 5)
 router.get('/', controller.listarEstoque);
 router.get('/produto/:id', controller.saldoPorProduto);
+>>>>>>> origin/main
 
 module.exports = router;
