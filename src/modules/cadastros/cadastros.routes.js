@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 /*
  * MÓDULO: CADASTROS  —  Responsável: YGOR
  * ------------------------------------------------------------
@@ -51,11 +51,11 @@
 
 const express = require('express');
 const router = express.Router();
-<<<<<<< HEAD
+
 // const controller = require('./cadastros.controller');
 
 // Rotas deste módulo vão aqui (passo 5)
-=======
+
 const controller = require('./cadastros.controller');
 
 // Rotas de produtos
@@ -71,6 +71,6 @@ router.get('/enderecos/:id', controller.buscarEndereco);
 router.post('/enderecos', controller.criarEndereco);
 router.put('/enderecos/:id', controller.editarEndereco);
 router.delete('/enderecos/:id', controller.excluirEndereco);
->>>>>>> origin/main
+
 
 module.exports = router;

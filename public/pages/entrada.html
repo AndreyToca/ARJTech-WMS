@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS - Entrada de Mercadoria</title>
-<<<<<<< HEAD
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -12,10 +11,10 @@
       <nav>
           <a href="../index.html">WMS</a>
           <span>Menu principal</span>
-      <nav>
- </header>
+      </nav>
+  </header>
 
-<main> style='padding: 20px;">
+  <main style="padding: 20px;">
     <h2>Entrada de Mercadoria</h2>
     
     <form id="formEntrada" style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; max-width: 500px;">
@@ -35,56 +34,34 @@
 
         <div style="margin-bottom: 15px;">
             <label for="quantidade">Quantidade:</label><br>
-            <input type="number" id"quantidade" min="1" required style="width: 100%; padding: 8px; margin-top: 5px;"
+            <input type="number" id="quantidade" min="1" required style="width: 100%; padding: 8px; margin-top: 5px;">
         </div>
         
         <div style="margin-bottom: 15px;">
             <label for="nota_fiscal">Nota Fiscal:</label><br>
-            <imput type="text" id="nota_fiscal" style="width: 100%; padding: 8px; margin-top: 5px;">
+            <input type="text" id="nota_fiscal" style="width: 100%; padding: 8px; margin-top: 5px;">
         </div>
         
-        <buttom type="submit" style="background: #004080; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;"Registrar Entrada</button>
-      </form>
+        <button type="submit" style="background: #004080; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">Registrar Entrada</button>
+    </form>
 
-      <h3>Histórico de Entradas</h3>
-      <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-          <thead>
-              <tr style="background: #004080; color: white; text-align: left;">
-                  <th style="padding: 8px;">ID</th>
-                  <th style="padding: 8px;">Produto ID</th>
-                  <th style="padding: 8px;">Endereço ID</th>
-                  <th style="padding: 8px;">Quantidade</th>
-                  <th style="padding: 8px;">Nota Fiscal</th>
-                  <th style="padding: 8px;">Data</th>
-              </tr>    
-          </thead>
-          <tbody id="tabelaEntradas">
-          </tbody  
-      </table>    
-=======
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <!--
-    TELA: Entrada de Mercadoria  —  Responsável: LUCAS
-    PASSO A PASSO
-    1. Criar formulário com: select de produto, select de endereço,
-       quantidade, número da nota fiscal e botão "Registrar entrada".
-    2. Criar espaço para mensagem de sucesso ou erro.
-    3. Abaixo: tabela com o histórico de entradas.
-    4. A lógica fica no arquivo public/js/entrada.js.
-  -->
-
-  <header>
-    <a href="/index.html">WMS</a>
-    <h1>Entrada de Mercadoria</h1>
-  </header>
-
-  <main>
-    <!-- Monte a tela aqui -->
->>>>>>> origin/main
+    <h3>Histórico de Entradas</h3>
+    <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+            <tr style="background: #004080; color: white; text-align: left;">
+                <th style="padding: 8px;">ID</th>
+                <th style="padding: 8px;">Produto ID</th>
+                <th style="padding: 8px;">Endereço ID</th>
+                <th style="padding: 8px;">Quantidade</th>
+                <th style="padding: 8px;">Nota Fiscal</th>
+                <th style="padding: 8px;">Data</th>
+            </tr>    
+        </thead>
+        <tbody id="tabelaEntradas">
+        </tbody>
+    </table>
   </main>
 
-  <script src="/js/entrada.js"></script>
+  <script src="../js/entrada.js"></script>
 </body>
 </html>

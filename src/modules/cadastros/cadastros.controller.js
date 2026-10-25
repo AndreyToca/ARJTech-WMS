@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 /*
  * CONTROLLER DE CADASTROS  —  Responsável: YGOR
  *
@@ -21,7 +21,7 @@
  * - Não deixe excluir produto que ainda tem estoque (combinar com o Felipe).
  * - Exporte as funções no final do arquivo.
  */
-=======
+
 
 const db = require('../../config/db');
 
@@ -393,4 +393,3 @@ module.exports = {
   editarEndereco,
   excluirEndereco
 };
->>>>>>> origin/main

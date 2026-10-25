@@ -16,8 +16,8 @@
  * - subtrairEstoque deve dar erro se não houver quantidade suficiente.
  * - Exporte TODAS as funções no final do arquivo.
  */
-<<<<<<< HEAD
-=======
+
+
 
 // 1. Importar a ligação à base de dados
 const db = require('../../config/db');
@@ -134,4 +134,4 @@ module.exports = {
     listarEstoque,
     saldoPorProduto
 };
->>>>>>> origin/main
+
