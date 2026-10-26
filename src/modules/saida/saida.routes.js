@@ -32,8 +32,11 @@
 
 const express = require('express');
 const router = express.Router();
-// const controller = require('./saida.controller');
+const controller = require('./saida.controller');
 
-// Rotas deste módulo vão aqui (passo 6)
+// Rotas deste módulo (passo 6)
+router.post('/', controller.criarPedido);              // criar pedido
+router.get('/', controller.listarPedidos);             // listar (?status=pendente)
+router.put('/:id/expedir', controller.expedirPedido);  // expedir
 
 module.exports = router;
