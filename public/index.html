@@ -3,24 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS</title>
+  <title>WMS - Painel</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
 </head>
-<body>
-  <!-- Página inicial (menu). Cada link leva para a tela de um módulo. -->
-  <header>
-    <a href="/index.html">WMS</a>
-    <h1>Menu principal</h1>
+<body class="pagina-menu">
+  <!-- Painel da operação. Só abre com usuário logado; a lógica fica em public/js/menu.js. -->
+  <header class="topo">
+    <div class="topo-barra">
+      <a href="/index.html" class="marca">
+        <svg class="marca-icone" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M16 3 28 9v14l-12 6-12-6V9z" fill="#f5b301"/>
+          <path d="M16 3 28 9 16 15 4 9z" fill="#ffd25a"/>
+          <path d="M16 15v14M10 6l12 6v5" stroke="#c98f00" stroke-width="1.5" fill="none"/>
+        </svg>
+        <span>ARJtech <strong>WMS</strong></span>
+      </a>
+
+      <form class="busca" id="busca" role="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="busca-termo" placeholder="Produto ou endereço (ex.: 100245, A-01-03)" aria-label="Buscar por código de produto ou endereço" autocomplete="off" spellcheck="false">
+        <kbd aria-hidden="true">/</kbd>
+      </form>
+
+      <div class="usuario-logado">
+        <span class="avatar" id="avatar-usuario" aria-hidden="true"></span>
+        <div class="usuario-info">
+          <span id="nome-usuario"></span>
+          <span id="perfil-usuario" class="perfil"></span>
+        </div>
+        <button type="button" id="botao-sair" class="botao-sair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span class="botao-sair-texto">Sair</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Esteira com caixas passando pelo leitor (só decoração). Também é reaproveitada como estado vazio. -->
+    <div class="esteira" aria-hidden="true">
+      <span class="caixa-esteira"></span>
+      <span class="caixa-esteira"></span>
+      <span class="caixa-esteira"></span>
+      <span class="caixa-esteira"></span>
+      <span class="caixa-esteira"></span>
+      <div class="leitor"></div>
+      <div class="cinta"></div>
+    </div>
   </header>
 
-  <main>
-    <nav class="menu">
-      <a href="/pages/login.html">Login</a>
-      <a href="/pages/cadastros.html">Cadastros</a>
-      <a href="/pages/entrada.html">Entrada de mercadoria</a>
-      <a href="/pages/saida.html">Saída de mercadoria</a>
-      <a href="/pages/estoque.html">Estoque</a>
+  <div class="layout">
+    <nav class="lateral" aria-label="Módulos">
+      <a href="/index.html" class="lateral-item" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span>Painel</span>
+      </a>
+      <div class="lateral-separador"></div>
+      <a href="/pages/cadastros.html" class="lateral-item" data-modulo="cadastros">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>
+        <span>Cadastros</span>
+      </a>
+      <a href="/pages/entrada.html" class="lateral-item" data-modulo="entrada">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>
+        <span>Entrada</span>
+      </a>
+      <a href="/pages/saida.html" class="lateral-item" data-modulo="saida">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4m-4 4 4-4 4 4"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>
+        <span>Saída</span>
+      </a>
+      <a href="/pages/estoque.html" class="lateral-item" data-modulo="estoque">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v18M20 3v18M4 9h16M4 15h16"/><rect x="7" y="5" width="4" height="4"/><rect x="12" y="11" width="5" height="4"/><rect x="7" y="17" width="4" height="4"/></svg>
+        <span>Estoque</span>
+      </a>
     </nav>
-  </main>
+
+    <main class="conteudo">
+      <div class="cabecalho">
+        <h1>Painel da operação</h1>
+        <span class="atualizado" id="atualizado"></span>
+      </div>
+
+      <section class="indicadores" id="indicadores" aria-label="Indicadores do dia"></section>
+
+      <div class="colunas">
+        <section class="bloco" aria-labelledby="titulo-movimentacoes">
+          <div class="bloco-topo">
+            <h2 id="titulo-movimentacoes">Últimas movimentações</h2>
+            <a href="/pages/estoque.html">Ver histórico</a>
+          </div>
+          <div class="tabela-rolagem">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>Data/hora</th>
+                  <th>Tipo</th>
+                  <th>Documento</th>
+                  <th>Produto</th>
+                  <th>Descrição</th>
+                  <th>Endereço</th>
+                  <th class="num">Qtd</th>
+                  <th>Usuário</th>
+                </tr>
+              </thead>
+              <tbody id="movimentacoes"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="bloco" aria-labelledby="titulo-alertas">
+          <div class="bloco-topo">
+            <h2 id="titulo-alertas">Alertas</h2>
+            <span class="contador" id="total-alertas"></span>
+          </div>
+          <div id="alertas"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/menu.js"></script>
 </body>
 </html>

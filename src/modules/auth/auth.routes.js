@@ -27,8 +27,8 @@
 
 const express = require('express');
 const router = express.Router();
-// const controller = require('./auth.controller');
+const controller = require('./auth.controller');
 
-// Rotas deste módulo vão aqui (passo 4)
+router.post('/login', controller.login);
 
 module.exports = router;
