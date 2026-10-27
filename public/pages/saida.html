@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS - Saída de Mercadoria</title>
   <link rel="stylesheet" href="/css/style.css">
+  <!-- Estilos só desta tela (Gabriel) -->
+  <style>
+    .form-saida { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+    .form-saida label, #filtro-status { display: block; }
+    .form-saida label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+    section { margin-bottom: 32px; }
+    .msg { padding: 8px 12px; border-radius: 4px; margin: 8px 0; }
+    .msg.sucesso { background: #e3f6e8; color: #17653a; }
+    .msg.erro { background: #fde8e8; color: #9b1c1c; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+  </style>
 </head>
 <body>
   <!--
@@ -23,7 +34,43 @@
   </header>
 
   <main>
-    <!-- Monte a tela aqui -->
+    <section>
+      <h2>Novo pedido de saída</h2>
+      <p id="usuario-info"></p>
+      <form id="form-pedido" class="form-saida" novalidate>
+        <label>Produto
+          <select id="produto" required></select>
+        </label>
+        <label>Endereço
+          <select id="endereco" required></select>
+        </label>
+        <label>Quantidade
+          <input id="quantidade" type="number" min="1" step="1" required>
+        </label>
+        <label>Cliente
+          <input id="cliente" type="text" maxlength="150" required>
+        </label>
+        <button type="submit" id="btn-criar">Criar pedido</button>
+      </form>
+      <div id="mensagem" role="status"></div>
+    </section>
+
+    <section>
+      <h2>Pedidos</h2>
+      <label>Filtrar por status
+        <select id="filtro-status">
+          <option value="">Todos</option>
+          <option value="pendente">Pendente</option>
+          <option value="enviado">Expedido (enviado)</option>
+        </select>
+      </label>
+      <table>
+        <thead>
+          <tr><th>Nº</th><th>Produto</th><th>Endereço</th><th>Qtd</th><th>Cliente</th><th>Status</th><th>Data</th><th>Ação</th></tr>
+        </thead>
+        <tbody id="tabela-pedidos"></tbody>
+      </table>
+    </section>
   </main>
 
   <script src="/js/saida.js"></script>
