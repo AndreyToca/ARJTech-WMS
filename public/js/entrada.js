@@ -86,8 +86,8 @@ async function carregarHistorico(){
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding: 8px; border: 1px solid #ddd;">${item.id}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.produto_id}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.endereco_id || item.endereco_Id || '-'}</td> 
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.produto_nome || `Produto #${item.produto_id}`}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.endereco_codigo || `Endereço #${item.endereco_id}`}</td> 
                 <td style="padding: 8px; border: 1px solid #ddd;">${item.quantidade}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${item.nota_fiscal || '-'}</td>  
                 <td style="padding: 8px; border: 1px solid #ddd;">${new Date(item.data).toLocaleString('pt-BR')}</td>

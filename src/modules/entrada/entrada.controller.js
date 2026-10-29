@@ -31,9 +31,19 @@ async function registrarEntrada(req, res) {
 async function listarEntradas(req, res) {
     try {
         const querySelect = `
-            SELECT id, produto_id, endereco_id, quantidade, nota_fiscal, data 
-            FROM entradas 
-            ORDER BY data DESC
+            SELECT 
+                e.id, 
+                e.produto_id, 
+                e.endereco_id, 
+                e.quantidade, 
+                e.nota_fiscal, 
+                e.data,
+                p.nome AS produto_nome,
+                en.codigo AS endereco_codigo
+            FROM entradas e
+            LEFT JOIN produtos p ON e.produto_id = p.id
+            LEFT JOIN enderecos en ON e.endereco_id = en.id
+            ORDER BY e.data DESC
         `;
         const [rows] = await db.execute(querySelect);
         return res.status(200).json(rows);
