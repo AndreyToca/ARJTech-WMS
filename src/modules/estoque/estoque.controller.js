@@ -114,4 +114,5 @@ module.exports = {
     somarEstoque,
     subtrairEstoque,
     listarEstoque,
-    saldoPorProduto
+    saldoPorProduto}
+    
