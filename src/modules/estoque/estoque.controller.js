@@ -113,6 +113,7 @@ async function saldoPorProduto(req, res) {
 module.exports = {
     somarEstoque,
     subtrairEstoque,
-    listarEstoque,
+    listarEstoque,  
     saldoPorProduto
 }
+
