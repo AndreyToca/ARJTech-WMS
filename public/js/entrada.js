@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function carregarProdutos(){
     try{
-        const resposta = await fetch('/api/produtos');
+        const resposta = await fetch('/api/cadastros/produtos');
         if (!resposta.ok) return;
         const produtos = await resposta.json();
 
@@ -57,7 +57,7 @@ async function carregarProdutos(){
 
 async function carregarEnderecos(){
     try{
-        const resposta = await fetch('/api/enderecos');
+        const resposta = await fetch('/api/cadastros/enderecos');
         if (!resposta.ok) return;
         const enderecos = await resposta.json();
 
