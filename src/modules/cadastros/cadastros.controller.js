@@ -58,24 +58,67 @@ async function buscarProduto(req, res) {
 }
 
 // POST /api/cadastros/produtos
-async function criarProduto(req, res) {
-  const codigo = String(req.body.codigo || '').trim();
-  const nome = String(req.body.nome || '').trim();
-  const unidade = String(req.body.unidade || 'UN').trim();
 
-  if (!codigo || !nome || !unidade) {
+async function criarProduto(req, res) {
+  const nome = String(req.body.nome || '').trim();
+  const unidade = String(req.body.unidade || '').trim();
+
+  if (!nome || !unidade) {
     return res.status(400).json({
-      erro: 'Código, nome e unidade são obrigatórios.'
+      erro: 'Nome e unidade sao obrigatorios.'
     });
   }
 
-  if (codigo.length > 30 || nome.length > 150 || unidade.length > 10) {
+  if (nome.length > 150 || unidade.length > 10) {
     return res.status(400).json({
       erro: 'Um ou mais campos excedem o tamanho permitido.'
     });
   }
 
   try {
+    // Busca os codigos automaticos que ja existem.
+    const [produtos] = await db.execute(
+      "SELECT codigo FROM produtos WHERE codigo REGEXP '^P[0-9]+$'"
+    );
+
+    let maiorNumero = 0;
+
+    for (const produto of produtos) {
+      const resultado = String(produto.codigo).match(/^P(\d+)$/i);
+
+      if (resultado) {
+        maiorNumero = Math.max(
+          maiorNumero,
+          Number(resultado[1])
+        );
+      }
+    }
+
+    // Procura o proximo codigo P disponivel.
+    let numero = maiorNumero + 1;
+    let codigo;
+
+    while (true) {
+      codigo = `P${String(numero).padStart(3, '0')}`;
+
+      const [existentes] = await db.execute(
+        'SELECT id FROM produtos WHERE codigo = ? LIMIT 1',
+        [codigo]
+      );
+
+      if (existentes.length === 0) {
+        break;
+      }
+
+      numero++;
+
+      if (!Number.isSafeInteger(numero)) {
+        return res.status(500).json({
+          erro: 'Nao foi possivel gerar um codigo de produto.'
+        });
+      }
+    }
+
     const [resultado] = await db.execute(
       'INSERT INTO produtos (codigo, nome, unidade) VALUES (?, ?, ?)',
       [codigo, nome, unidade]
@@ -94,39 +137,59 @@ async function criarProduto(req, res) {
 }
 
 // PUT /api/cadastros/produtos/:id
+
 async function editarProduto(req, res) {
   const id = idValido(req.params.id);
-  if (!id) return res.status(400).json({ erro: 'ID inválido.' });
 
-  const codigo = String(req.body.codigo || '').trim();
+  if (!id) {
+    return res.status(400).json({ erro: 'ID inválido.' });
+  }
+
   const nome = String(req.body.nome || '').trim();
   const unidade = String(req.body.unidade || '').trim();
 
-  if (!codigo || !nome || !unidade) {
+  if (!nome || !unidade) {
     return res.status(400).json({
-      erro: 'Código, nome e unidade são obrigatórios.'
+      erro: 'Nome e unidade são obrigatórios.'
     });
   }
 
-  if (codigo.length > 30 || nome.length > 150 || unidade.length > 10) {
+  if (nome.length > 150 || unidade.length > 10) {
     return res.status(400).json({
       erro: 'Um ou mais campos excedem o tamanho permitido.'
     });
   }
 
   try {
-    const [resultado] = await db.execute(
-      `UPDATE produtos
-       SET codigo = ?, nome = ?, unidade = ?
-       WHERE id = ?`,
-      [codigo, nome, unidade, id]
+    // Busca o produto para preservar seu código automático.
+    const [produtos] = await db.execute(
+      'SELECT id, codigo FROM produtos WHERE id = ?',
+      [id]
     );
 
-    if (resultado.affectedRows === 0) {
-      return res.status(404).json({ erro: 'Produto não encontrado.' });
+    if (produtos.length === 0) {
+      return res.status(404).json({
+        erro: 'Produto não encontrado.'
+      });
     }
 
-    return res.json({ mensagem: 'Produto atualizado com sucesso.' });
+    const codigo = produtos[0].codigo;
+
+    // A edição altera somente o nome e a unidade.
+    await db.execute(
+      `UPDATE produtos
+       SET nome = ?, unidade = ?
+       WHERE id = ?`,
+      [nome, unidade, id]
+    );
+
+    return res.json({
+      mensagem: 'Produto atualizado com sucesso.',
+      id,
+      codigo,
+      nome,
+      unidade
+    });
   } catch (erro) {
     return erroBanco(res, erro);
   }
