@@ -28,16 +28,17 @@
             <form id="form-produto">
                 <input type="hidden" id="produto-id">
 
-                <div class="campo-formulario">
-                    <label for="produto-codigo">Código do produto</label>
-                    <input
-                        type="text"
-                        id="produto-codigo"
-                        maxlength="50"
-                        placeholder="Ex.: P005"
-                        required
-                    >
-                </div>
+
+            <div class="campo-formulario">
+                <label for="produto-codigo">Código do produto</label>
+                <input
+                    type="text"
+                    id="produto-codigo"
+                    maxlength="30"
+                    placeholder="Gerado automaticamente"
+                    readonly
+                 >
+             </div>
 
                 <div class="campo-formulario">
                     <label for="produto-nome">Nome do produto</label>
@@ -81,7 +82,6 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Código</th>
                             <th>Nome</th>
                             <th>Unidade</th>

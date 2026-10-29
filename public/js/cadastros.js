@@ -10,6 +10,32 @@ const listaEnderecos = document.getElementById('lista-enderecos');
 const mensagemProduto = document.getElementById('mensagem-produto');
 const mensagemEndereco = document.getElementById('mensagem-endereco');
 
+let produtosCarregados = [];
+
+function proximoCodigoProduto(produtos) {
+    let maiorNumero = 0;
+
+    produtos.forEach(produto => {
+        const resultado = String(produto.codigo || '').match(/^P(\d+)$/i);
+
+        if (resultado) {
+            maiorNumero = Math.max(maiorNumero, Number(resultado[1]));
+        }
+    });
+
+    return `P${String(maiorNumero + 1).padStart(3, '0')}`;
+}
+
+function atualizarCodigoProduto() {
+    const id = document.getElementById('produto-id').value;
+    const campoCodigo = document.getElementById('produto-codigo');
+
+    // Durante a edição, mantém o código do produto existente.
+    if (id) return;
+
+    campoCodigo.value = proximoCodigoProduto(produtosCarregados);
+}
+
 // Exibe mensagens para o usuário.
 function mensagem(elemento, texto, erro = false) {
     elemento.textContent = texto;
@@ -52,18 +78,18 @@ async function requisicao(url, opcoes = {}) {
 async function carregarProdutos() {
     try {
         const produtos = await requisicao(`${API}/produtos`);
-
+        produtosCarregados = Array.isArray(produtos) ? produtos : [];
+        atualizarCodigoProduto();
         listaProdutos.innerHTML = '';
 
         if (!Array.isArray(produtos) || produtos.length === 0) {
             listaProdutos.innerHTML =
-                '<tr><td colspan="5">Nenhum produto cadastrado.</td></tr>';
+                '<tr><td colspan="4">Nenhum produto cadastrado.</td></tr>';
             return;
         }
 
         listaProdutos.innerHTML = produtos.map(produto => `
             <tr>
-                <td>${escapar(produto.id)}</td>
                 <td>${escapar(produto.codigo)}</td>
                 <td>${escapar(produto.nome)}</td>
                 <td>${escapar(produto.unidade)}</td>
@@ -131,6 +157,8 @@ formProduto.addEventListener('reset', () => {
         document.getElementById('produto-id').value = '';
         document.getElementById('botao-produto').textContent =
             'Salvar produto';
+
+        atualizarCodigoProduto();
     }, 0);
 });
 
