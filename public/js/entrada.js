@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formEntrada = document.getElementById('formEntrada');
     formEntrada.addEventListener('submit', async (e) => {
-        e.proventDefault();
+        e.preventDefault(); // Corrigido preventDefault
 
         const produto_id = document.getElementById('produto_id').value;
-        const endereço_id = document.getElementById('endereço_id').value;
+        const endereco_id = document.getElementById('endereco_id').value;
         const quantidade = document.getElementById('quantidade').value;
         const nota_fiscal = document.getElementById('nota_fiscal').value;
 
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ produto_id, endereco_Id, quantidade, nota_fiscal})
+                body: JSON.stringify({ produto_id, endereco_id, quantidade, nota_fiscal })
             });
             
             const resultado = await resposta.json();
@@ -44,14 +44,14 @@ async function carregarProdutos(){
         const produtos = await resposta.json();
 
         const select = document.getElementById('produto_id');
-        produtos.forEach(end => {
-            const option = document.creatElement('option');
+        produtos.forEach(prod => { // Corrigido de 'end' para 'prod'
+            const option = document.createElement('option'); // Corrigido creatElement
             option.value = prod.id;
             option.textContent = prod.nome || `Produto #${prod.id}`;
             select.appendChild(option);
-        });;
+        });
     } catch (e) {
-        console.log('Produtos carregados ou pendentes de rota.');
+        console.log('Erro ao carregar produtos:', e);
     }
 }
 
@@ -63,13 +63,13 @@ async function carregarEnderecos(){
 
         const select = document.getElementById('endereco_id');
         enderecos.forEach(end => {
-            const option = document.creatElement('option');
-            option.value = prod.id;
+            const option = document.createElement('option'); // Corrigido creatElement
+            option.value = end.id; // Corrigido de prod para end.id
             option.textContent = end.descricao || end.codigo || `Endereço #${end.id}`;
             select.appendChild(option);
-        });;
+        });
     } catch (e) {
-        console.log('Endereços carregados ou pendentes de rota.');
+        console.log('Erro ao carregar endereços:', e);
     }
 }
 
@@ -80,27 +80,21 @@ async function carregarHistorico(){
         const entradas = await resposta.json();
 
         const tbody = document.getElementById('tabelaEntradas');
-        tbody.innerHTML = ' ';
+        tbody.innerHTML = '';
 
         entradas.forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.id}</th>
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.produto_id}</th>
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.endereco_Id}</th> 
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.quantidade}</th>
-                <td style="padding: 8px; border: 1px solid #ddd;">${item.nota_fiscal || '-'}</th>  
-                <td style="padding: 8px; border: 1px solid #ddd;">${new Date(item.data).toLocaleString('pt-BR')}</th>
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.id}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.produto_id}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.endereco_id || item.endereco_Id || '-'}</td> 
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.quantidade}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${item.nota_fiscal || '-'}</td>  
+                <td style="padding: 8px; border: 1px solid #ddd;">${new Date(item.data).toLocaleString('pt-BR')}</td>
             `;
             tbody.appendChild(tr);                
         });
     } catch (erro){
         console.error('Erro ao carregar histórico:', erro);
     }
-}        
-
-           
-
-
-
-
+}
