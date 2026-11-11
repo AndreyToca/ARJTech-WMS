@@ -22,7 +22,25 @@
   </header>
 
   <main>
-    <!-- Monte a tela aqui -->
+    <!-- 1. Campo de busca por produto -->
+    <div style="margin-bottom: 20px;">
+        <label for="busca-produto">Buscar produto:</label>
+        <input type="text" id="busca-produto" placeholder="Nome do produto...">
+    </div>
+
+    <!-- 2. Tabela com: produto, endereço e quantidade -->
+    <table border="1" style="width: 100%; text-align: left; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Endereço</th>
+                <th>Quantidade</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-estoque">
+            <!-- O JavaScript vai injetar as linhas aqui -->
+        </tbody>
+    </table>
   </main>
 
   <script src="/js/estoque.js"></script>
