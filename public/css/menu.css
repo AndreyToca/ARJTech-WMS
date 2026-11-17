@@ -261,6 +261,8 @@
 .cabecalho { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
 .cabecalho h1 { margin: 0; font-size: 16px; font-weight: 600; }
 .atualizado { font-size: 12px; color: var(--texto-3); font-variant-numeric: tabular-nums; }
+.atualizado.erro { color: var(--problema); }
+.indicador.carregando { opacity: 0.55; }
 
 /* ==================== Indicadores do dia ==================== */
 

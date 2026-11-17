@@ -15,6 +15,7 @@ app.use('/api/cadastros', require('./modules/cadastros/cadastros.routes')); // Y
 app.use('/api/entrada', require('./modules/entrada/entrada.routes'));    // Lucas
 app.use('/api/saida', require('./modules/saida/saida.routes'));          // Gabriel
 app.use('/api/estoque', require('./modules/estoque/estoque.routes'));    // Felipe
+app.use('/api/relatorios', require('./modules/relatorios/relatorios.routes')); // Andrey (dashboard)
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`WMS rodando em http://localhost:${PORT}`));

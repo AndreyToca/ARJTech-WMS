@@ -30,21 +30,24 @@
         <form id="form-pedido" class="formulario" novalidate>
           <div class="campo">
             <label for="cliente">Cliente</label>
-            <select id="cliente" required></select>
+            <select data-busca id="cliente" required></select>
           </div>
           <div class="campo">
             <label for="produto">Produto do cliente</label>
-            <select id="produto" required disabled>
+            <select data-busca id="produto" required disabled>
               <option value="">Escolha o cliente primeiro</option>
             </select>
           </div>
           <div class="campo">
-            <label for="endereco">Endereço</label>
-            <select id="endereco" required></select>
+            <label for="endereco">Endereço com saldo</label>
+            <select data-busca id="endereco" required disabled>
+              <option value="">Escolha o produto primeiro</option>
+            </select>
           </div>
           <div class="campo">
             <label for="quantidade">Quantidade</label>
             <input id="quantidade" type="number" min="1" step="1" required>
+            <small class="dica-campo" id="dica-disponivel" aria-live="polite"></small>
           </div>
           <div class="campo">
             <label for="preco">Preço unit. (R$)</label>
@@ -63,9 +66,9 @@
         <h2 id="titulo-pedidos">Pedidos</h2>
         <label class="filtro">Status
           <select id="filtro-status">
+            <option value="pendente" selected>Pendentes (a expedir)</option>
+            <option value="enviado">Expedidos</option>
             <option value="">Todos</option>
-            <option value="pendente">Pendente</option>
-            <option value="enviado">Expedido</option>
           </select>
         </label>
       </div>
@@ -90,6 +93,57 @@
         </table>
       </div>
     </section>
+    <!-- Janela de expedição (abre ao clicar em "Expedir"; lógica em saida.js) -->
+    <dialog class="dialogo" id="dialogo-expedir" aria-labelledby="dialogo-titulo">
+      <form method="dialog" id="form-expedir" novalidate>
+        <div class="faixa-alerta" aria-hidden="true"></div>
+        <div class="dialogo-topo">
+          <div>
+            <h2 id="dialogo-titulo">Expedir pedido</h2>
+            <p class="dialogo-sub" id="dialogo-sub"></p>
+          </div>
+          <button type="button" class="dialogo-fechar" id="dialogo-fechar" aria-label="Fechar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+
+        <dl class="dialogo-dados">
+          <div><dt>Produto</dt><dd id="exp-produto"></dd></div>
+          <div><dt>Endereço</dt><dd id="exp-endereco" class="cod"></dd></div>
+          <div><dt>Pedido</dt><dd id="exp-pedido"></dd></div>
+          <div><dt>Em estoque no endereço</dt><dd id="exp-saldo">…</dd></div>
+        </dl>
+
+        <fieldset class="dialogo-modo">
+          <legend>Quanto expedir</legend>
+          <label class="opcao">
+            <input type="radio" name="modo" value="total" checked>
+            <span><strong>Pedido inteiro</strong><small id="exp-total-texto"></small></span>
+          </label>
+          <label class="opcao">
+            <input type="radio" name="modo" value="parcial">
+            <span><strong>Parcial</strong><small>O restante fica pendente num novo pedido</small></span>
+          </label>
+        </fieldset>
+
+        <div class="campo campo-parcial" id="campo-parcial" hidden>
+          <label for="exp-quantidade">Quantidade a expedir agora</label>
+          <div class="quantidade-linha">
+            <input type="number" id="exp-quantidade" min="1" step="1" inputmode="numeric">
+            <span class="unidade" id="exp-unidade"></span>
+            <button type="button" class="secundario" id="exp-maximo">Máximo em estoque</button>
+          </div>
+        </div>
+
+        <div class="dialogo-resumo" id="exp-resumo" aria-live="polite"></div>
+        <p class="aviso" id="exp-erro" role="alert"></p>
+
+        <div class="dialogo-botoes">
+          <button type="button" class="secundario" id="exp-cancelar">Cancelar</button>
+          <button type="submit" id="exp-confirmar">Expedir</button>
+        </div>
+      </form>
+    </dialog>
   </main>
 
   <script src="/js/layout.js"></script>

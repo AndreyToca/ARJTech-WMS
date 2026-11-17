@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WMS - Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/modulos.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="pagina-menu pagina-modulo pagina-dashboard" data-modulo="dashboard">
+  <!--
+    TELA: Dashboard  —  Responsável: ANDREY
+    Dados: GET /api/relatorios/dashboard. Venda = pedido de saída EXPEDIDO.
+    A lógica e os gráficos ficam em public/js/dashboard.js.
+  -->
+
+  <main>
+    <div class="cabecalho">
+      <h1>Dashboard</h1>
+      <p>Vendas expedidas: receita, custo e lucro.</p>
+    </div>
+
+    <!-- Filtros: valem para tudo abaixo -->
+    <form class="filtros" id="filtros" aria-label="Filtros do dashboard">
+      <div class="campo">
+        <label for="filtro-periodo">Período</label>
+        <select id="filtro-periodo">
+          <option value="mes">Este mês</option>
+          <option value="mes-passado">Mês passado</option>
+          <option value="3m">Últimos 3 meses</option>
+          <option value="6m">Últimos 6 meses</option>
+          <option value="12m" selected>Últimos 12 meses</option>
+          <option value="ano">Este ano</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="filtro-cliente">Cliente</label>
+        <select data-busca id="filtro-cliente">
+          <option value="">Todos os clientes</option>
+        </select>
+      </div>
+      <span class="periodo-texto" id="periodo-texto"></span>
+    </form>
+
+    <div id="mensagem" class="aviso" role="status"></div>
+
+    <!-- Lucro em destaque + números do período -->
+    <section class="destaques" aria-label="Resumo do período">
+      <div class="heroi">
+        <span class="heroi-rotulo">Lucro no período</span>
+        <span class="heroi-valor" id="kpi-lucro">—</span>
+        <span class="heroi-detalhe" id="kpi-lucro-detalhe"></span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span class="kpi-rotulo">Receita</span><span class="kpi-valor" id="kpi-receita">—</span><span class="kpi-detalhe">Quantidade × preço</span></div>
+        <div class="kpi"><span class="kpi-rotulo">Custo das vendas</span><span class="kpi-valor" id="kpi-custo">—</span><span class="kpi-detalhe">Quantidade × custo médio</span></div>
+        <div class="kpi"><span class="kpi-rotulo">Margem</span><span class="kpi-valor" id="kpi-margem">—</span><span class="kpi-detalhe">Lucro ÷ receita</span></div>
+        <div class="kpi"><span class="kpi-rotulo">Pedidos expedidos</span><span class="kpi-valor" id="kpi-pedidos">—</span><span class="kpi-detalhe" id="kpi-unidades"></span></div>
+        <div class="kpi"><span class="kpi-rotulo">Ticket médio</span><span class="kpi-valor" id="kpi-ticket">—</span><span class="kpi-detalhe">Receita ÷ pedidos</span></div>
+        <div class="kpi"><span class="kpi-rotulo">Pedidos pendentes</span><span class="kpi-valor" id="kpi-pendentes">—</span><span class="kpi-detalhe" id="kpi-pendentes-valor"></span></div>
+      </div>
+    </section>
+
+    <!-- Lucro por mês -->
+    <section class="bloco" aria-labelledby="titulo-mensal">
+      <div class="bloco-topo">
+        <h2 id="titulo-mensal">Lucro por mês</h2>
+        <button type="button" class="alternar" data-alvo="mensal" aria-pressed="false">Ver tabela</button>
+      </div>
+      <div class="grafico carregando" id="grafico-mensal"></div>
+      <div class="tabela-rolagem tabela-alternativa" id="tabela-mensal" hidden></div>
+      <p class="grafico-legenda">Barras abaixo de zero (vermelhas) são meses com prejuízo. Passe o mouse para ver receita e custo.</p>
+    </section>
+
+    <div class="colunas-dash">
+      <section class="bloco" aria-labelledby="titulo-produtos">
+        <div class="bloco-topo">
+          <h2 id="titulo-produtos">Produtos que mais saem</h2>
+          <button type="button" class="alternar" data-alvo="produtos" aria-pressed="false">Ver tabela</button>
+        </div>
+        <div class="grafico carregando" id="grafico-produtos"></div>
+        <div class="tabela-rolagem tabela-alternativa" id="tabela-produtos" hidden></div>
+        <p class="grafico-legenda">Top 10 por quantidade expedida.</p>
+      </section>
+
+      <section class="bloco" aria-labelledby="titulo-clientes">
+        <div class="bloco-topo">
+          <h2 id="titulo-clientes">Clientes que mais compram</h2>
+          <button type="button" class="alternar" data-alvo="clientes" aria-pressed="false">Ver tabela</button>
+        </div>
+        <div class="grafico carregando" id="grafico-clientes"></div>
+        <div class="tabela-rolagem tabela-alternativa" id="tabela-clientes" hidden></div>
+        <p class="grafico-legenda">Top 10 por receita.</p>
+      </section>
+    </div>
+  </main>
+
+  <div class="tooltip-grafico" id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <script src="/js/layout.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

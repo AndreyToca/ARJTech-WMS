@@ -12,7 +12,7 @@
   <!--
     TELA: Entrada de Mercadoria  —  Responsável: LUCAS
     Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
-    A lógica fica no arquivo public/js/entrada.js.
+    Lógica em public/js/entrada.js; leitura da NF-e (chave e XML) em public/js/nfe.js.
   -->
 
   <main>
@@ -21,23 +21,104 @@
       <p>A entrada soma no estoque e atualiza o custo médio do produto.</p>
     </div>
 
+    <!-- ==================== Entrada por nota fiscal ==================== -->
+    <section class="bloco" aria-labelledby="titulo-nota">
+      <div class="bloco-topo">
+        <h2 id="titulo-nota">Entrada por nota fiscal (NF-e)</h2>
+        <span class="contador">1. Bipe a nota &nbsp;·&nbsp; 2. Carregue o XML &nbsp;·&nbsp; 3. Confira e lance</span>
+      </div>
+
+      <div class="bloco-corpo nota-passos">
+        <div class="passo-nota">
+          <label for="chave" class="rotulo-passo">Chave de acesso</label>
+          <div class="leitor-chave">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 6v12M7 6v12M10 6v12M14 6v12M17 6v12M20 6v12"/></svg>
+            <input type="text" id="chave" inputmode="numeric" autocomplete="off" spellcheck="false"
+                   placeholder="Bipe o código de barras do DANFE ou digite os 44 números">
+            <button type="button" class="secundario" id="limpar-nota">Limpar</button>
+          </div>
+          <p class="status-chave" id="chave-status" aria-live="polite"></p>
+          <dl class="dados-nota" id="chave-info" hidden></dl>
+        </div>
+
+        <div class="passo-nota">
+          <span class="rotulo-passo">XML da nota</span>
+          <label class="area-xml" id="area-xml">
+            <input type="file" id="xml-arquivo" accept=".xml,text/xml,application/xml">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6m-3 3 3-3 3 3"/></svg>
+            <span><strong>Arraste o XML aqui</strong> ou clique para escolher</span>
+            <small>É o arquivo .xml que o fornecedor envia junto com a nota. Ele traz os produtos, quantidades e valores.</small>
+          </label>
+          <p class="status-chave" id="xml-status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <!-- Itens da nota (aparece depois de carregar o XML) -->
+      <div id="nota-itens" hidden>
+        <div class="barra-itens">
+          <div class="campo">
+            <label for="endereco-todos">Endereço para todos os itens</label>
+            <select data-busca id="endereco-todos">
+              <option value="">Escolha para aplicar a todos...</option>
+            </select>
+          </div>
+          <p class="dica-itens" id="dica-itens"></p>
+        </div>
+        <div class="tabela-rolagem">
+          <table class="tabela tabela-nota">
+            <thead>
+              <tr>
+                <th><span class="sr-only">Lançar</span></th>
+                <th>#</th>
+                <th>Item na nota</th>
+                <th class="num">Qtd na nota</th>
+                <th>Produto no sistema</th>
+                <th>Endereço</th>
+                <th class="num">Quantidade</th>
+                <th class="num">Valor unit. (R$)</th>
+                <th class="num">Total</th>
+              </tr>
+            </thead>
+            <tbody id="itens-nota"></tbody>
+            <tfoot>
+              <tr>
+                <th colspan="6" class="num">Total dos produtos na nota: <span id="total-xml"></span></th>
+                <th class="num" id="total-qtd"></th>
+                <th></th>
+                <th class="num" id="total-lancar"></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="bloco-corpo">
+          <p id="mensagem-nota" class="aviso" role="status"></p>
+          <div class="botoes">
+            <button type="button" id="lancar-nota">Lançar nota</button>
+            <button type="button" class="secundario" id="cancelar-nota">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== Entrada manual ==================== -->
     <section class="bloco" aria-labelledby="titulo-nova-entrada">
       <div class="bloco-topo">
-        <h2 id="titulo-nova-entrada">Registrar entrada</h2>
+        <h2 id="titulo-nova-entrada">Entrada manual</h2>
+        <span class="contador">Para notas sem XML ou ajustes</span>
       </div>
 
       <div class="bloco-corpo">
         <form id="formEntrada" class="formulario">
           <div class="campo">
             <label for="produto_id">Produto</label>
-            <select id="produto_id" required>
+            <select data-busca id="produto_id" required>
               <option value="">Selecione um produto...</option>
             </select>
           </div>
 
           <div class="campo">
             <label for="endereco_id">Endereço de armazenagem</label>
-            <select id="endereco_id" required>
+            <select data-busca id="endereco_id" required>
               <option value="">Selecione um endereço...</option>
             </select>
           </div>
@@ -48,7 +129,15 @@
           </div>
 
           <div class="campo">
-            <label for="valor_unitario">Valor unitário (R$)</label>
+            <span class="rotulo" id="rotulo-modo">O valor informado é</span>
+            <div class="alternador" role="radiogroup" aria-labelledby="rotulo-modo">
+              <label><input type="radio" name="modo-valor" value="unitario" checked><span>Por unidade</span></label>
+              <label><input type="radio" name="modo-valor" value="total"><span>Total da linha</span></label>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="valor_unitario" id="rotulo-valor">Valor unitário (R$)</label>
             <input type="number" id="valor_unitario" min="0" step="0.01" required placeholder="0,00">
           </div>
 
@@ -56,6 +145,8 @@
             <label for="nota_fiscal">Nota fiscal</label>
             <input type="text" id="nota_fiscal" maxlength="50" placeholder="Ex.: NF-1001">
           </div>
+
+          <p class="previa-entrada" id="previa-entrada" aria-live="polite"></p>
 
           <div class="botoes">
             <button type="submit" id="botao-entrada">Registrar entrada</button>
@@ -66,6 +157,7 @@
       </div>
     </section>
 
+    <!-- ==================== Histórico ==================== -->
     <section class="bloco" aria-labelledby="titulo-historico">
       <div class="bloco-topo">
         <h2 id="titulo-historico">Histórico de entradas</h2>
@@ -92,6 +184,7 @@
   </main>
 
   <script src="/js/layout.js"></script>
+  <script src="/js/nfe.js"></script>
   <script src="/js/entrada.js"></script>
 </body>
 </html>

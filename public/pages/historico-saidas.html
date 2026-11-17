@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WMS - Histórico de saídas</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/modulos.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="pagina-menu pagina-modulo" data-modulo="historico">
+  <!--
+    TELA: Histórico de saídas  —  Responsável: GABRIEL (módulo de saída)
+    Dados: GET /api/saida com os filtros inicio, fim, cliente_id, produto_id e status.
+    A lógica fica em public/js/historico-saidas.js.
+  -->
+
+  <main>
+    <div class="cabecalho">
+      <h1>Histórico de saídas</h1>
+      <p>Todos os pedidos de saída, com valores. Os filtros valem para a tabela e para os totais.</p>
+    </div>
+
+    <form class="filtros" id="filtros" aria-label="Filtros do histórico">
+      <div class="campo">
+        <label for="filtro-inicio">De</label>
+        <input type="date" id="filtro-inicio">
+      </div>
+      <div class="campo">
+        <label for="filtro-fim">Até</label>
+        <input type="date" id="filtro-fim">
+      </div>
+      <div class="campo">
+        <label for="filtro-cliente">Cliente</label>
+        <select data-busca id="filtro-cliente">
+          <option value="">Todos os clientes</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="filtro-produto">Produto</label>
+        <select data-busca id="filtro-produto">
+          <option value="">Todos os produtos</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="filtro-status">Status</label>
+        <select id="filtro-status">
+          <option value="">Todos</option>
+          <option value="enviado">Expedido</option>
+          <option value="pendente">Pendente</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div class="botoes">
+        <button type="button" class="secundario" id="botao-limpar">Limpar filtros</button>
+        <button type="button" id="botao-csv">Exportar CSV</button>
+      </div>
+    </form>
+
+    <div id="mensagem" class="aviso" role="status"></div>
+
+    <section class="indicadores" id="totais" aria-label="Totais do filtro"></section>
+
+    <section class="bloco" aria-labelledby="titulo-historico">
+      <div class="bloco-topo">
+        <h2 id="titulo-historico">Pedidos <span class="contador" id="total-linhas"></span></h2>
+      </div>
+      <div class="tabela-rolagem">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Produto</th>
+              <th>Endereço</th>
+              <th class="num">Qtd</th>
+              <th class="num">Preço unit.</th>
+              <th class="num">Valor total</th>
+              <th class="num">Custo</th>
+              <th class="num">Margem</th>
+              <th>Status</th>
+              <th>Usuário</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-historico"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/layout.js"></script>
+  <script src="/js/historico-saidas.js"></script>
+</body>
+</html>

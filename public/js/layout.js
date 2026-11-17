@@ -22,6 +22,8 @@
     painel: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
     produtos: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
     enderecos: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    dashboard: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    historico: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
     entrada: '<path d="M12 3v11m-4-4 4 4 4-4"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>',
     saida: '<path d="M12 15V4m-4 4 4-4 4 4"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>',
@@ -44,6 +46,13 @@
         { id: 'entrada', nome: 'Entrada', link: '/pages/entrada.html' },
         { id: 'saida', nome: 'Saída', link: '/pages/saida.html' },
         { id: 'estoque', nome: 'Estoque', link: '/pages/estoque.html' },
+        { id: 'historico', nome: 'Histórico de saídas', link: '/pages/historico-saidas.html' },
+      ],
+    },
+    {
+      titulo: 'Análise',
+      itens: [
+        { id: 'dashboard', nome: 'Dashboard', link: '/pages/dashboard.html' },
       ],
     },
   ];
@@ -112,6 +121,12 @@
   main.before(layout);
   layout.append(lateral, main);
   document.body.prepend(topo);
+
+  // ---------- Listas com busca (combo.js) ----------
+  // Selects grandes viram campos de busca em todas as telas
+  const scriptCombo = document.createElement('script');
+  scriptCombo.src = '/js/combo.js';
+  document.head.appendChild(scriptCombo);
 
   // ---------- Carregamento ----------
   // Barra fina no topo enquanto houver requisição em andamento
@@ -183,6 +198,24 @@
       if (botao) botao.classList.remove('carregando');
       atualizarEstado();
     }
+  };
+
+  // ---------- Aviso flutuante (fica visível em qualquer ponto da rolagem) ----------
+  // Uso nas telas: window.WMS.avisar('Pedido expedido.', 'sucesso' | 'erro')
+  const pilhaAvisos = document.createElement('div');
+  pilhaAvisos.className = 'avisos-flutuantes';
+  pilhaAvisos.setAttribute('role', 'status');
+  pilhaAvisos.setAttribute('aria-live', 'polite');
+  document.body.append(pilhaAvisos);
+
+  window.WMS = window.WMS || {};
+  window.WMS.avisar = (texto, tipo = 'sucesso') => {
+    const aviso = document.createElement('div');
+    aviso.className = 'aviso-flutuante ' + tipo;
+    aviso.textContent = texto;
+    pilhaAvisos.append(aviso);
+    setTimeout(() => aviso.classList.add('saindo'), tipo === 'erro' ? 6000 : 3500);
+    setTimeout(() => aviso.remove(), tipo === 'erro' ? 6400 : 3900);
   };
 
   // ---------- Usuário ----------

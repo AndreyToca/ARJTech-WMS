@@ -3,57 +3,33 @@
  *
  * 1. Se não houver usuário salvo pelo login, manda para a tela de login.
  * 2. Mostra nome e perfil no topo.
- * 3. Preenche indicadores do dia, badges da barra lateral, últimas movimentações e alertas.
- * 4. Busca rápida: código de produto ou endereço (A-01-03) abre a tela de Estoque filtrada.
+ * 3. Busca GET /api/relatorios/painel e preenche: indicadores, badges da barra lateral,
+ *    últimas movimentações e alertas. Atualiza sozinho a cada 2 minutos.
+ * 4. Busca rápida: código de produto ou endereço (A-01-3) abre a tela de Estoque filtrada.
  * 5. O botão "Sair" apaga o usuário e volta para o login.
  */
 
-// ---------- Dados de exemplo ----------
-// TODO: trocar pelas APIs de entrada, saída e estoque quando estiverem prontas.
-// status: 'ok' | 'atencao' | 'problema' (é o que define a cor na tela)
-
-const indicadores = [
-  { valor: 7,  rotulo: 'Notas a receber',   detalhe: '2 na doca, no horário',    status: 'ok',       modulo: 'entrada', link: '/pages/entrada.html' },
-  { valor: 46, rotulo: 'Itens a endereçar', detalhe: 'Mais antigo há 1h40',      status: 'atencao',  modulo: 'entrada', link: '/pages/entrada.html' },
-  { valor: 18, rotulo: 'Pedidos a separar', detalhe: '4 com corte às 16:00',     status: 'atencao',  modulo: 'saida',   link: '/pages/saida.html' },
-  { valor: 3,  rotulo: 'Divergências',      detalhe: '2 posições bloqueadas',    status: 'problema', modulo: 'estoque', link: '/pages/estoque.html' },
-];
-
-// minutos: há quanto tempo a movimentação aconteceu
-const movimentacoes = [
-  { minutos: 3,  tipo: 'saida',         documento: 'PED 8841', codigo: '100318', descricao: 'Luva nitrílica M cx 100',      endereco: 'B-02-01',            qtd: 6,   unidade: 'cx', usuario: 'gabriel.s' },
-  { minutos: 7,  tipo: 'entrada',       documento: 'NF 45112', codigo: '100245', descricao: 'Detergente alcalino 5 L',      endereco: 'A-01-03',            qtd: 48,  unidade: 'gl', usuario: 'lucas.m' },
-  { minutos: 12, tipo: 'transferencia', documento: 'TRF 0193', codigo: '100772', descricao: 'Filme stretch 500 mm 25 µm',   endereco: 'C-04-02 → C-01-01',  qtd: 10,  unidade: 'rl', usuario: 'felipe.r' },
-  { minutos: 18, tipo: 'saida',         documento: 'PED 8839', codigo: '100911', descricao: 'Óleo hidráulico ISO 68 20 L',  endereco: 'D-02-04',            qtd: 4,   unidade: 'bd', usuario: 'gabriel.s' },
-  { minutos: 25, tipo: 'entrada',       documento: 'NF 45109', codigo: '100533', descricao: 'Fita adesiva 48 mm x 100 m',   endereco: 'B-05-02',            qtd: 60,  unidade: 'rl', usuario: 'lucas.m' },
-  { minutos: 31, tipo: 'saida',         documento: 'PED 8838', codigo: '100045', descricao: 'Etiqueta térmica 100x150 mm',  endereco: 'A-03-05',            qtd: 12,  unidade: 'rl', usuario: 'gabriel.s' },
-  { minutos: 40, tipo: 'entrada',       documento: 'NF 45109', codigo: '100127', descricao: 'Caixa papelão 40x30x30 cm',    endereco: 'E-01-01',            qtd: 500, unidade: 'un', usuario: 'lucas.m' },
-  { minutos: 52, tipo: 'transferencia', documento: 'TRF 0192', codigo: '100604', descricao: 'Desengraxante 1 L cx 12',      endereco: 'A-02-04 → A-01-06',  qtd: 8,   unidade: 'cx', usuario: 'felipe.r' },
-  { minutos: 66, tipo: 'saida',         documento: 'PED 8835', codigo: '100389', descricao: 'Parafuso sext. M8x30 cx 500',  endereco: 'F-03-02',            qtd: 3,   unidade: 'cx', usuario: 'gabriel.s' },
-  { minutos: 78, tipo: 'entrada',       documento: 'NF 45104', codigo: '100211', descricao: 'Palete PBR 1,20 x 1,00 m',     endereco: 'G-01-01',            qtd: 20,  unidade: 'un', usuario: 'lucas.m' },
-];
-
-const alertas = [
-  { grupo: 'saldo',      status: 'problema', codigo: '100045', descricao: 'Etiqueta térmica 100x150 mm', endereco: 'A-03-05', info: 'Saldo 0 · mín. 10 rl',     marcador: 'Ruptura' },
-  { grupo: 'saldo',      status: 'atencao',  codigo: '100772', descricao: 'Filme stretch 500 mm 25 µm',  endereco: 'C-04-02', info: 'Saldo 6 · mín. 20 rl',     marcador: '30%' },
-  { grupo: 'saldo',      status: 'atencao',  codigo: '100318', descricao: 'Luva nitrílica M cx 100',     endereco: 'B-02-01', info: 'Saldo 14 · mín. 40 cx',    marcador: '35%' },
-  { grupo: 'divergencia', status: 'problema', codigo: '100533', descricao: 'Fita adesiva 48 mm x 100 m', endereco: 'B-05-02', info: 'Sistema 60 · físico 0 · bloqueado',    marcador: '−60' },
-  { grupo: 'divergencia', status: 'problema', codigo: '100245', descricao: 'Detergente alcalino 5 L',    endereco: 'A-01-03', info: 'Sistema 120 · físico 96 · bloqueado',  marcador: '−24' },
-  { grupo: 'divergencia', status: 'atencao',  codigo: '100604', descricao: 'Desengraxante 1 L cx 12',    endereco: 'A-01-06', info: 'Sistema 340 · físico 338 · recontar',  marcador: '−2' },
-];
+const ATUALIZAR_A_CADA = 2 * 60 * 1000;
 
 const TIPOS = {
   entrada: { icone: '↓', nome: 'Entrada' },
   saida: { icone: '↑', nome: 'Saída' },
-  transferencia: { icone: '⇄', nome: 'Transferência' },
 };
+
+const STATUS_SAIDA = { pendente: 'pendente', enviado: 'expedida', cancelado: 'cancelada', separado: 'separada' };
 
 const GRUPOS_ALERTA = {
+  custo: 'Custo acima do preço de venda',
+  pedidos: 'Pedidos sem estoque suficiente',
   saldo: 'Saldo abaixo do mínimo',
-  divergencia: 'Divergência físico x sistema',
 };
 
-const ENDERECO = /^[A-Z]-\d{2}-\d{2}$/;
+const ENDERECO = /^[A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+$/;
+
+const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const formatarMoeda = (v) => moeda.format(Number(v || 0));
+const inteiro = (n) => Number(n || 0).toLocaleString('pt-BR');
+const plural = (n, um, varios) => `${inteiro(n)} ${Number(n) === 1 ? um : varios}`;
 
 // ---------- Início ----------
 
@@ -72,13 +48,9 @@ if (!usuario) {
   document.getElementById('perfil-usuario').textContent =
     usuario.perfil === 'admin' ? 'Administrador' : 'Operador';
 
-  document.getElementById('atualizado').textContent =
-    `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
-
-  montarIndicadores();
-  montarBadges();
-  montarMovimentacoes();
-  montarAlertas();
+  mostrarCarregando();
+  carregarPainel();
+  setInterval(carregarPainel, ATUALIZAR_A_CADA);
 }
 
 // Cria um elemento com classe e texto (sem innerHTML, para não injetar HTML vindo da API)
@@ -89,10 +61,100 @@ function el(tag, classe, texto) {
   return elemento;
 }
 
-function montarIndicadores() {
-  const area = document.getElementById('indicadores');
+// ---------- Dados ----------
 
-  for (const item of indicadores) {
+async function carregarPainel() {
+  const atualizado = document.getElementById('atualizado');
+  try {
+    const resposta = await fetch('/api/relatorios/painel');
+    const dados = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) throw new Error(dados.erro || `Erro do servidor (${resposta.status}).`);
+
+    montarIndicadores(dados.indicadores, dados.alertas);
+    montarBadges(dados.indicadores, dados.alertas);
+    montarMovimentacoes(dados.movimentacoes);
+    montarAlertas(dados.alertas);
+    atualizado.textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    atualizado.classList.remove('erro');
+  } catch (erro) {
+    atualizado.textContent = `Não foi possível atualizar: ${erro.message}`;
+    atualizado.classList.add('erro');
+    if (document.querySelector('#indicadores .carregando')) mostrarErro(erro.message);
+  }
+}
+
+function mostrarCarregando() {
+  const area = document.getElementById('indicadores');
+  area.replaceChildren();
+  for (let i = 0; i < 4; i++) {
+    const bloco = el('div', 'indicador carregando');
+    bloco.append(el('span', 'indicador-valor', '—'), el('span', 'indicador-rotulo', 'Carregando…'));
+    area.append(bloco);
+  }
+  const linha = el('tr');
+  const td = el('td', 'secundario', 'Carregando movimentações…');
+  td.colSpan = 8;
+  linha.append(td);
+  document.getElementById('movimentacoes').replaceChildren(linha);
+  document.getElementById('alertas').replaceChildren(el('div', 'vazio', ''));
+}
+
+function mostrarErro(mensagem) {
+  const linha = el('tr');
+  const td = el('td', 'secundario', 'Não foi possível carregar: ' + mensagem);
+  td.colSpan = 8;
+  linha.append(td);
+  document.getElementById('movimentacoes').replaceChildren(linha);
+}
+
+// ---------- Indicadores ----------
+
+function montarIndicadores(ind, alertas) {
+  const totalAlertas = alertas.saldo.length + alertas.pedidos.length + alertas.custo.length;
+  const itens = [
+    {
+      valor: inteiro(ind.pendentes.pedidos),
+      rotulo: 'Pedidos a expedir',
+      detalhe: ind.pendentes.atrasados
+        ? `${plural(ind.pendentes.atrasados, 'pedido', 'pedidos')} há mais de ${ind.pendentes.dias_atraso} dias`
+        : ind.pendentes.pedidos ? `${formatarMoeda(ind.pendentes.valor)} a expedir` : 'Nada pendente',
+      status: ind.pendentes.atrasados ? 'atencao' : 'ok',
+      link: '/pages/saida.html',
+    },
+    {
+      valor: inteiro(ind.entradas_hoje.itens),
+      rotulo: 'Itens recebidos hoje',
+      detalhe: ind.entradas_hoje.itens
+        ? `${plural(ind.entradas_hoje.notas, 'nota', 'notas')} · ${inteiro(ind.entradas_hoje.unidades)} un`
+        : 'Nenhuma entrada hoje',
+      status: '',
+      link: '/pages/entrada.html',
+    },
+    {
+      valor: formatarMoeda(ind.mes.lucro),
+      rotulo: 'Lucro do mês',
+      detalhe: ind.mes.pedidos
+        ? `${plural(ind.mes.pedidos, 'pedido expedido', 'pedidos expedidos')} · receita ${formatarMoeda(ind.mes.receita)}`
+        : 'Nenhuma venda expedida no mês',
+      status: ind.mes.lucro < 0 ? 'problema' : ind.mes.pedidos ? 'ok' : '',
+      link: '/pages/dashboard.html',
+    },
+    {
+      valor: inteiro(totalAlertas),
+      rotulo: 'Alertas',
+      detalhe: totalAlertas
+        ? [alertas.custo.length && plural(alertas.custo.length, 'custo errado', 'custos errados'),
+           alertas.pedidos.length && plural(alertas.pedidos.length, 'pedido sem estoque', 'pedidos sem estoque'),
+           alertas.saldo.length && plural(alertas.saldo.length, 'saldo baixo', 'saldos baixos')].filter(Boolean).join(' · ')
+        : 'Tudo em dia',
+      status: totalAlertas ? 'problema' : 'ok',
+      link: '#titulo-alertas',
+    },
+  ];
+
+  const area = document.getElementById('indicadores');
+  area.replaceChildren();
+  for (const item of itens) {
     const link = el('a', 'indicador');
     link.href = item.link;
 
@@ -100,7 +162,7 @@ function montarIndicadores() {
     detalhe.append(el('span', 'status-ponto'), item.detalhe);
 
     link.append(
-      el('span', 'indicador-valor', item.valor.toLocaleString('pt-BR')),
+      el('span', 'indicador-valor', item.valor),
       el('span', 'indicador-rotulo', item.rotulo),
       detalhe,
     );
@@ -108,34 +170,53 @@ function montarIndicadores() {
   }
 }
 
-// Soma as pendências de cada módulo; o badge só fica vermelho se houver problema
-function montarBadges() {
-  const porModulo = {};
-  for (const item of indicadores) {
-    const atual = porModulo[item.modulo] || { total: 0, problema: false };
-    atual.total += item.valor;
-    atual.problema ||= item.status === 'problema';
-    porModulo[item.modulo] = atual;
-  }
+// Badges da barra lateral: pendências de cada módulo (vermelho se houver problema)
+function montarBadges(ind, alertas) {
+  document.querySelectorAll('.lateral-item .badge').forEach((b) => b.remove());
+  const porModulo = {
+    saida: { total: ind.pendentes.pedidos, problema: alertas.pedidos.length > 0, titulo: 'pedidos a expedir' },
+    estoque: { total: alertas.saldo.length + alertas.pedidos.length, problema: alertas.pedidos.length > 0, titulo: 'alertas de estoque' },
+    produtos: { total: alertas.custo.length, problema: alertas.custo.length > 0, titulo: 'produtos com custo acima do preço' },
+  };
 
-  for (const [modulo, { total, problema }] of Object.entries(porModulo)) {
+  for (const [modulo, { total, problema, titulo }] of Object.entries(porModulo)) {
     const link = document.querySelector(`.lateral-item[data-modulo="${modulo}"]`);
-    if (!link || total === 0) continue;
-    const badge = el('span', problema ? 'badge problema' : 'badge', total);
-    badge.title = `${total} pendências`;
+    if (!link || !total) continue;
+    const badge = el('span', problema ? 'badge problema' : 'badge', inteiro(total));
+    badge.title = `${inteiro(total)} ${titulo}`;
     link.append(badge);
   }
 }
 
-function formatarDataHora(minutosAtras) {
-  const data = new Date(Date.now() - minutosAtras * 60000);
-  const dia = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-  const hora = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+// ---------- Últimas movimentações ----------
+
+function formatarDataHora(data) {
+  const d = new Date(data);
+  const dia = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   return `${dia} ${hora}`;
 }
 
-function montarMovimentacoes() {
+// Nota fiscal: chave de 44 números vira "NF-e nº"; saída vira "PED nº"
+function documento(mov) {
+  if (mov.tipo === 'saida') return `PED ${mov.documento}`;
+  const doc = String(mov.documento || '');
+  if (/^\d{44}$/.test(doc)) return `NF-e ${Number(doc.slice(25, 34))}`;
+  return doc ? `NF ${doc.replace(/^NF-?\s*/i, '')}` : '-';
+}
+
+function montarMovimentacoes(movimentacoes) {
   const corpo = document.getElementById('movimentacoes');
+  corpo.replaceChildren();
+
+  if (!movimentacoes.length) {
+    const linha = el('tr');
+    const td = el('td', 'secundario', 'Nenhuma movimentação ainda.');
+    td.colSpan = 8;
+    linha.append(td);
+    corpo.append(linha);
+    return;
+  }
 
   for (const mov of movimentacoes) {
     const tipo = TIPOS[mov.tipo];
@@ -143,16 +224,17 @@ function montarMovimentacoes() {
 
     const celulaTipo = el('td');
     celulaTipo.append(el('span', 'tipo-icone', tipo.icone), tipo.nome);
+    if (mov.tipo === 'saida' && mov.status) celulaTipo.append(el('span', 'unidade', STATUS_SAIDA[mov.status] || mov.status));
 
-    const celulaQtd = el('td', 'num', mov.qtd.toLocaleString('pt-BR'));
-    celulaQtd.append(el('span', 'unidade', mov.unidade));
+    const celulaQtd = el('td', 'num', inteiro(mov.quantidade));
+    celulaQtd.append(el('span', 'unidade', String(mov.unidade || '').toLowerCase()));
 
     linha.append(
-      el('td', 'secundario', formatarDataHora(mov.minutos)),
+      el('td', 'secundario', formatarDataHora(mov.data)),
       celulaTipo,
-      el('td', 'secundario', mov.documento),
+      el('td', 'secundario', documento(mov)),
       el('td', 'cod', mov.codigo),
-      el('td', 'descricao', mov.descricao),
+      el('td', 'descricao', mov.nome),
       el('td', 'cod', mov.endereco),
       celulaQtd,
       el('td', 'secundario', mov.usuario),
@@ -161,35 +243,71 @@ function montarMovimentacoes() {
   }
 }
 
-function montarAlertas() {
-  const area = document.getElementById('alertas');
-  document.getElementById('total-alertas').textContent = alertas.length ? `${alertas.length} abertos` : '';
+// ---------- Alertas ----------
 
-  if (alertas.length === 0) {
+function montarAlertas(alertas) {
+  const area = document.getElementById('alertas');
+  area.replaceChildren();
+  const total = alertas.saldo.length + alertas.pedidos.length + alertas.custo.length;
+  document.getElementById('total-alertas').textContent = total ? `${inteiro(total)} abertos` : '';
+
+  if (total === 0) {
     const vazio = el('div', 'vazio');
     const esteira = document.querySelector('.topo .esteira').cloneNode(true);
     esteira.classList.add('vazia');
-    vazio.append(esteira, el('p', null, 'Sem alertas. Saldos e contagens em dia.'));
+    vazio.append(esteira, el('p', null, 'Sem alertas. Saldos, pedidos e custos em dia.'));
     area.append(vazio);
     return;
   }
 
+  // Cada tipo de alerta vira um item com link para a tela onde se resolve
+  const montar = {
+    custo: (a) => ({
+      status: 'problema',
+      link: `/pages/produtos.html`,
+      codigo: a.codigo,
+      descricao: a.nome,
+      marcador: `${(a.custo_medio / a.preco_venda).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}×`,
+      info: `Custo médio ${formatarMoeda(a.custo_medio)} · preço ${formatarMoeda(a.preco_venda)}. Confira a entrada.`,
+    }),
+    pedidos: (a) => ({
+      status: 'problema',
+      link: '/pages/saida.html',
+      codigo: a.codigo,
+      descricao: a.nome,
+      endereco: a.endereco,
+      marcador: `−${inteiro(a.pedido - a.saldo)}`,
+      info: `${plural(a.pedidos, 'pedido pede', 'pedidos pedem')} ${inteiro(a.pedido)}, há ${inteiro(a.saldo)} ${String(a.unidade || '').toLowerCase()}`,
+    }),
+    saldo: (a) => ({
+      status: a.quantidade === 0 ? 'problema' : 'atencao',
+      link: `/pages/estoque.html?produto=${encodeURIComponent(a.codigo)}`,
+      codigo: a.codigo,
+      descricao: a.nome,
+      endereco: a.endereco,
+      marcador: a.quantidade === 0 ? 'Ruptura' : `${inteiro(a.quantidade)} ${String(a.unidade || '').toLowerCase()}`,
+      info: `Saldo ${inteiro(a.quantidade)} · mín. ${a.limite}`,
+    }),
+  };
+
   for (const [grupo, titulo] of Object.entries(GRUPOS_ALERTA)) {
-    const itens = alertas.filter((a) => a.grupo === grupo);
-    if (itens.length === 0) continue;
+    const itens = alertas[grupo];
+    if (!itens.length) continue;
 
     const secao = el('div', 'alertas-grupo');
     secao.append(el('h3', null, titulo));
 
-    for (const alerta of itens) {
+    for (const bruto of itens) {
+      const alerta = montar[grupo](bruto);
       const link = el('a', `alerta ${alerta.status}`);
-      link.href = `/pages/estoque.html?endereco=${encodeURIComponent(alerta.endereco)}`;
+      link.href = alerta.link;
 
       const produto = el('span', 'alerta-produto');
       produto.append(el('span', 'cod', alerta.codigo), ` ${alerta.descricao}`);
 
       const info = el('span', 'alerta-info');
-      info.append(el('span', 'cod', alerta.endereco), ` · ${alerta.info}`);
+      if (alerta.endereco) info.append(el('span', 'cod', alerta.endereco), ' · ');
+      info.append(alerta.info);
 
       link.append(el('span', 'status-ponto'), produto, el('span', 'alerta-marcador', alerta.marcador), info);
       secao.append(link);

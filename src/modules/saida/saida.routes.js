@@ -37,6 +37,7 @@ const controller = require('./saida.controller');
 // Rotas deste módulo (passo 6)
 router.post('/', controller.criarPedido);              // criar pedido
 router.get('/', controller.listarPedidos);             // listar (?status=pendente)
+router.get('/disponivel', controller.listarDisponivel); // produtos/endereços disponíveis do cliente (?cliente_id=)
 router.put('/:id/expedir', controller.expedirPedido);  // expedir
 
 module.exports = router;

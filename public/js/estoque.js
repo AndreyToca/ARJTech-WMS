@@ -11,6 +11,8 @@ const ESTOQUE_BAIXO = 10;
 
 // Variável global para guardar os dados e permitir o filtro sem ir ao banco várias vezes
 let todosProdutos = [];
+let todosEnderecos = [];
+const CHAVE_VISAO = 'estoque-visao';
 
 const formatarMoeda = (valor) =>
     Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -26,9 +28,11 @@ function celula(linha, texto, classe) {
 // 1. Buscar os dados no servidor
 async function carregarEstoque() {
     try {
-        const resposta = await fetch('/api/estoque');
+        // Estoque e endereços juntos (o mapa precisa de todos os endereços, inclusive os vazios)
+        const [resposta, respostaEnderecos] = await Promise.all([fetch('/api/estoque'), fetch('/api/cadastros/enderecos')]);
         if (!resposta.ok) throw new Error(`Erro do servidor (${resposta.status}).`);
         todosProdutos = await resposta.json();
+        todosEnderecos = respostaEnderecos.ok ? await respostaEnderecos.json() : [];
         filtrar();
     } catch (erro) {
         console.error('Erro ao carregar o estoque:', erro);
@@ -127,9 +131,33 @@ function filtrar() {
         [p.nome, p.codigo, p.endereco_codigo].some(campo => String(campo || '').toLowerCase().includes(termo))
     );
     renderizarTabela(filtrados);
+    // O mapa mostra todos os endereços e acende os que combinam com a busca
+    EstoqueMapa.atualizar(todosProdutos, todosEnderecos, termo);
 }
 
 document.getElementById('busca-produto').addEventListener('input', filtrar);
+
+// ---------- Lista | Mapa do armazém ----------
+function mostrarVisao(visao) {
+    const mapa = visao === 'mapa';
+    document.getElementById('mapa-armazem').hidden = !mapa;
+    document.getElementById('visao-lista').hidden = mapa;
+    document.querySelector(`input[name="visao"][value="${visao}"]`).checked = true;
+    try { localStorage.setItem(CHAVE_VISAO, visao); } catch { /* sem armazenamento: só não lembra */ }
+    if (mapa) EstoqueMapa.desenhar();
+}
+
+EstoqueMapa.iniciar(document.getElementById('mapa-armazem'), {
+    // "Ver na lista" no painel de detalhes: filtra pelo endereço e volta para a lista
+    aoVerNaLista: (codigo) => {
+        document.getElementById('busca-produto').value = codigo;
+        filtrar();
+        mostrarVisao('lista');
+    },
+});
+document.querySelectorAll('input[name="visao"]').forEach((opcao) =>
+    opcao.addEventListener('change', () => mostrarVisao(opcao.value)));
+try { if (localStorage.getItem(CHAVE_VISAO) === 'mapa') mostrarVisao('mapa'); } catch { /* ignora */ }
 
 // Busca vinda do topo: /pages/estoque.html?produto=P001 ou ?endereco=A-01-1
 const parametros = new URLSearchParams(window.location.search);

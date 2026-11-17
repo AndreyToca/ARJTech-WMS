@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/menu.css">
   <link rel="stylesheet" href="/css/modulos.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/estoque-mapa.css">
 </head>
 <body class="pagina-menu pagina-modulo" data-modulo="estoque">
   <!--
@@ -18,7 +20,7 @@
   <main>
     <div class="cabecalho">
       <h1>Estoque</h1>
-      <p>Saldo atual por produto e endereço. Linhas em vermelho: menos de 10 unidades.</p>
+      <p>Saldo atual por produto e endereço. Em vermelho: menos de 10 unidades.</p>
     </div>
 
     <!-- Resumo (preenchido pelo estoque.js; acompanha a busca) -->
@@ -27,11 +29,20 @@
     <section class="bloco" aria-labelledby="titulo-saldos">
       <div class="bloco-topo">
         <h2 id="titulo-saldos">Saldos</h2>
-        <label class="filtro">Buscar
-          <input type="search" id="busca-produto" placeholder="Produto, código ou endereço">
-        </label>
+        <div class="topo-acoes">
+          <div class="alternador visao" role="radiogroup" aria-label="Forma de ver o estoque">
+            <label><input type="radio" name="visao" value="lista" checked><span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</span></label>
+            <label><input type="radio" name="visao" value="mapa"><span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Mapa do armazém</span></label>
+          </div>
+          <label class="filtro">Buscar
+            <input type="search" id="busca-produto" placeholder="Produto, código ou endereço">
+          </label>
+        </div>
       </div>
-      <div class="tabela-rolagem">
+      <div id="mapa-armazem" hidden></div>
+      <div class="tabela-rolagem" id="visao-lista">
         <table class="tabela">
           <thead>
             <tr>
@@ -57,6 +68,7 @@
   </main>
 
   <script src="/js/layout.js"></script>
+  <script src="/js/estoque-mapa.js"></script>
   <script src="/js/estoque.js"></script>
 </body>
 </html>

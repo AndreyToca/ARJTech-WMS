@@ -7,6 +7,9 @@
    ========================================= */
 
 .pagina-modulo .conteudo { display: flex; flex-direction: column; gap: 16px; }
+
+/* O atributo hidden sempre esconde, mesmo em elementos com display próprio (ex.: .campo) */
+.pagina-modulo [hidden] { display: none !important; }
 .pagina-modulo .cabecalho { margin-bottom: 0; }
 .pagina-modulo .cabecalho p { margin: 0; font-size: 13px; color: var(--texto-2); }
 
@@ -144,7 +147,8 @@
 
 /* Esconde o conteúdo até o layout.js montar topo e lateral (evita a tela "pular") */
 .pagina-modulo main:not(.conteudo) { visibility: hidden; }
-.pagina-modulo main.conteudo { animation: modulo-surgir 0.3s ease-out both; }
+/* Sem fill-mode: um transform "preso" no main faria as listas fixas (combo) se posicionarem errado */
+.pagina-modulo main.conteudo { animation: modulo-surgir 0.3s ease-out; }
 
 /* Barra fina amarela embaixo da esteira enquanto há requisição */
 .pagina-modulo .topo { position: sticky; }
@@ -226,6 +230,257 @@
   .pagina-modulo main.conteudo { animation: none; }
   .esqueleto td span,
   .indicador.esqueleto span { animation: none; }
+  .aviso-flutuante, .pagina-modulo .tabela tr.destaque-ok td { animation: none; }
+}
+
+/* ==================== Entrada: nota fiscal e entrada manual ==================== */
+
+.pagina-modulo .aviso.atencao { border-left-color: var(--atencao-ponto); background: #fff6e5; color: var(--atencao); }
+
+.nota-passos { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; }
+.passo-nota { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.rotulo-passo { font-size: 12px; font-weight: 600; color: var(--texto-2); }
+
+.leitor-chave { position: relative; display: flex; align-items: center; gap: 8px; }
+.leitor-chave > svg { position: absolute; left: 12px; width: 20px; height: 20px; color: var(--texto-3); pointer-events: none; }
+.pagina-modulo .leitor-chave input {
+  flex: 1; min-width: 0; height: 44px; padding: 0 12px 0 42px;
+  border: 1.5px solid var(--linha); border-radius: 8px; background: #f9fafc;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 15px; letter-spacing: 0.02em;
+}
+.pagina-modulo .leitor-chave input:focus { outline: none; border-color: var(--azul); background: #fff; box-shadow: 0 0 0 4px rgba(31, 58, 95, 0.12); }
+.leitor-chave:focus-within > svg { color: var(--azul); }
+.pagina-modulo main .leitor-chave button { height: 44px; }
+
+.status-chave { min-height: 18px; margin: 0; font-size: 12px; color: var(--texto-2); }
+.status-chave.ok { color: var(--ok); }
+.status-chave.erro { color: var(--problema); font-weight: 600; }
+
+.dados-nota { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 14px; margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--fundo); }
+.dados-nota[hidden] { display: none; }
+.dados-nota dt { font-size: 11px; color: var(--texto-2); }
+.dados-nota dd { margin: 1px 0 0; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.dados-nota dd.ok { color: var(--ok); }
+.dados-nota dd.atencao { color: var(--atencao); }
+.dados-nota dd.problema { color: var(--problema); }
+
+.area-xml {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 118px; padding: 14px; border: 1.5px dashed #c3c8cf; border-radius: 10px;
+  background: #fafbfc; color: var(--texto-2); font-size: 13px; text-align: center; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.area-xml:hover, .area-xml.arrastando { border-color: var(--azul); background: #f3f6fa; }
+.area-xml:focus-within { border-color: var(--azul); box-shadow: 0 0 0 4px rgba(31, 58, 95, 0.12); }
+.area-xml input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.area-xml svg { width: 26px; height: 26px; color: var(--azul); }
+.area-xml strong { color: var(--texto); }
+.area-xml small { max-width: 340px; font-size: 11px; color: var(--texto-3); }
+
+.barra-itens { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; padding: 0 14px 12px; }
+.barra-itens .campo { width: 240px; }
+.dica-itens { margin: 0 0 8px; font-size: 12px; color: var(--texto-2); }
+
+.pagina-modulo .tabela-nota td { vertical-align: top; white-space: normal; }
+.pagina-modulo .tabela-nota td.descricao { min-width: 220px; }
+.pagina-modulo .tabela-nota td.descricao small { display: block; margin-top: 2px; font-size: 11px; }
+.pagina-modulo .tabela-nota .combo { min-width: 200px; }
+.pagina-modulo .tabela-nota td:nth-child(5) .combo { min-width: 120px; }
+.pagina-modulo .tabela-nota input {
+  width: 96px; height: 32px; padding: 0 8px; border: 1px solid var(--linha); border-radius: 6px;
+  font: inherit; text-align: right; font-variant-numeric: tabular-nums;
+}
+.pagina-modulo .tabela-nota .combo .combo-entrada {
+  width: 100%; height: 32px; padding: 0 30px 0 8px; border: 1px solid var(--linha); border-radius: 6px; font: inherit;
+  text-align: left;
+}
+.pagina-modulo .tabela-nota input:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(31, 58, 95, 0.12); }
+.pagina-modulo .tabela-nota tr.pendente td:first-child { box-shadow: inset 3px 0 0 var(--problema); }
+.pagina-modulo .tabela-nota tr.ignorado td { opacity: 0.5; }
+.pagina-modulo .tabela-nota tr.ignorado td:first-child { opacity: 1; }
+.pagina-modulo .tabela-nota input.item-incluir { width: 16px; height: 16px; margin-top: 8px; accent-color: var(--azul); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.aviso-item { display: block; margin-top: 4px; font-size: 11px; line-height: 1.35; }
+.aviso-item.erro { color: var(--problema); }
+.aviso-item.atencao { color: var(--atencao); }
+.pagina-modulo .tabela-nota tfoot th { font-size: 13px; text-align: right; }
+
+/* Entrada manual: "valor por unidade" ou "total da linha" */
+.alternador { display: flex; height: 36px; padding: 3px; border: 1px solid var(--linha); border-radius: 8px; background: var(--fundo); }
+.alternador label { position: relative; flex: 1; }
+.alternador input { position: absolute; opacity: 0; }
+.alternador span {
+  display: flex; height: 100%; align-items: center; justify-content: center; padding: 0 8px;
+  border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--texto-2); cursor: pointer; white-space: nowrap;
+}
+.alternador input:checked + span { background: var(--superficie); color: var(--azul); box-shadow: 0 1px 3px rgba(15, 34, 56, 0.12); }
+.alternador input:focus-visible + span { outline: 2px solid rgba(31, 58, 95, 0.4); }
+
+.dica-campo { min-height: 15px; font-size: 11px; color: var(--texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Formulário com dica embaixo de um campo: alinha os campos pelo topo para a dica não desalinhar a linha */
+.pagina-modulo .formulario:has(.dica-campo) { align-items: start; }
+.dica-campo.erro { color: var(--problema); font-weight: 600; }
+.previa-entrada { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.previa-entrada:empty { display: none; }
+.previa-entrada.atencao { color: var(--atencao); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .nota-passos { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ==================== Lista com busca (combo.js) ==================== */
+
+.combo { position: relative; width: 100%; min-width: 0; }
+.pagina-modulo .combo .combo-entrada { padding-right: 34px; text-overflow: ellipsis; }
+.pagina-modulo .filtro .combo .combo-entrada { height: 30px; }
+.combo .combo-original {
+  position: absolute !important; left: 0; bottom: 0;
+  width: 1px !important; height: 1px !important; min-width: 0 !important;
+  padding: 0 !important; border: 0 !important; opacity: 0; pointer-events: none;
+}
+.pagina-modulo main .combo .combo-seta {
+  position: absolute; top: 50%; right: 4px; translate: 0 -50%;
+  width: 28px; height: 28px; padding: 0;
+  border: none; background: transparent; color: var(--texto-3);
+}
+.pagina-modulo main .combo .combo-seta:hover:not(:disabled) { background: transparent; color: var(--texto); }
+.combo-seta svg { width: 16px; height: 16px; transition: transform 0.15s; }
+.combo.aberto .combo-seta svg { transform: rotate(180deg); }
+.combo.desabilitado .combo-entrada { background: var(--destaque); color: var(--texto-3); cursor: not-allowed; }
+
+/* Posição fixa calculada pelo combo.js (não é cortada por tabelas com rolagem nem janelas) */
+.combo-lista {
+  position: fixed; z-index: 70;
+  max-height: 280px; margin: 0; padding: 4px; overflow-y: auto; list-style: none;
+  border: 1px solid var(--linha); border-radius: 8px; background: var(--superficie);
+  box-shadow: 0 10px 30px rgba(15, 34, 56, 0.14);
+}
+.combo-lista[hidden] { display: none; }
+.combo-opcao {
+  padding: 7px 10px; border-radius: 5px; font-size: 13px; cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.combo-opcao.vazia { color: var(--texto-3); }
+.combo-opcao.ativa { background: var(--destaque); color: var(--texto); }
+.combo-opcao[aria-selected="true"] { font-weight: 600; color: var(--azul); }
+.combo-opcao[aria-selected="true"]::after { content: '  ✓'; }
+.combo-opcao[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.combo-nada { padding: 8px 10px; font-size: 12px; color: var(--texto-3); }
+/* Campo obrigatório vazio (o select de verdade fica escondido, então a mensagem é nossa) */
+.combo.invalido .combo-entrada { border-color: var(--problema) !important; box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.12) !important; }
+.combo-erro { display: block; margin-top: 4px; font-size: 11px; font-weight: 600; color: var(--problema); }
+
+/* ==================== Janela (dialog) — mesmo visual do cartão do Login ==================== */
+
+.dialogo {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  overflow: auto;
+  border: none;
+  border-radius: 14px;
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: 0 20px 50px rgba(15, 34, 56, 0.25), 0 2px 6px rgba(15, 34, 56, 0.08);
+}
+.dialogo[open] { animation: dialogo-entrar 0.22s ease-out; }
+.dialogo::backdrop { background: rgba(15, 34, 56, 0.45); backdrop-filter: blur(3px); animation: fundo-entrar 0.22s ease-out; }
+.dialogo form { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 26px 24px 20px; }
+.dialogo .faixa-alerta {
+  position: absolute; top: 0; left: 0; right: 0; height: 6px;
+  background: repeating-linear-gradient(-45deg, var(--amarelo) 0 12px, var(--azul) 12px 24px);
+}
+/* padding/fundo zerados: o style.css pinta todo <header> de azul */
+.dialogo-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 0; background: none; color: inherit; }
+.dialogo-topo h2 { margin: 0; font-size: 20px; color: var(--azul); }
+.dialogo-sub { margin: 2px 0 0; font-size: 13px; color: var(--texto-2); }
+.pagina-modulo main .dialogo-fechar {
+  width: 32px; height: 32px; padding: 0; flex-shrink: 0;
+  border-color: transparent; background: transparent; color: var(--texto-3);
+}
+.pagina-modulo main .dialogo-fechar:hover:not(:disabled) { background: var(--destaque); color: var(--texto); }
+.dialogo-fechar svg { width: 18px; height: 18px; }
+
+.dialogo-dados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 0; padding: 12px 14px; border-radius: 8px; background: var(--fundo); }
+.dialogo-dados dt { font-size: 12px; color: var(--texto-2); }
+.dialogo-dados dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.dialogo-dados dd.falta { color: var(--problema); }
+
+.dialogo-modo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; border: none; }
+.dialogo-modo legend { margin-bottom: 6px; padding: 0; font-size: 12px; font-weight: 600; color: var(--texto-2); }
+.opcao {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+  border: 1.5px solid var(--linha); border-radius: 8px; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.opcao:hover { background: #fafbfc; }
+.opcao:has(input:checked) { border-color: var(--azul); background: #f3f6fa; }
+.opcao:has(input:disabled) { opacity: 0.55; cursor: not-allowed; }
+.opcao input { margin: 3px 0 0; accent-color: var(--azul); }
+.opcao strong { display: block; font-size: 14px; }
+.opcao small { display: block; margin-top: 1px; font-size: 12px; color: var(--texto-2); }
+
+.quantidade-linha { display: flex; align-items: center; gap: 8px; }
+.pagina-modulo .quantidade-linha input { width: 120px; font-size: 16px; font-weight: 600; }
+.pagina-modulo main .quantidade-linha button { height: 36px; font-size: 12px; }
+
+.dialogo-resumo { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--linha); border-radius: 8px; font-size: 13px; }
+.dialogo-resumo:empty { display: none; }
+.dialogo-resumo .linha { display: flex; justify-content: space-between; gap: 12px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.dialogo-resumo .linha strong { color: var(--texto); }
+.dialogo-resumo .linha.destaque strong { color: var(--atencao); }
+
+.dialogo .aviso { margin: 0; }
+.dialogo-botoes { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+.pagina-modulo main .dialogo-botoes button { height: 40px; padding: 0 18px; }
+
+@keyframes dialogo-entrar { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+@keyframes fundo-entrar { from { opacity: 0; } }
+
+@media (max-width: 560px) {
+  .dialogo-dados, .dialogo-modo { grid-template-columns: minmax(0, 1fr); }
+  .dialogo-botoes button { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialogo[open], .dialogo::backdrop { animation: none; }
+}
+
+/* ==================== Aviso flutuante ==================== */
+
+.avisos-flutuantes {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.aviso-flutuante {
+  padding: 11px 14px;
+  border-left: 4px solid var(--ok);
+  border-radius: 6px;
+  background: var(--superficie);
+  box-shadow: 0 10px 30px rgba(15, 34, 56, 0.18);
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 600;
+  animation: aviso-entrar 0.25s ease-out;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.aviso-flutuante.erro { border-left-color: var(--problema); color: var(--problema); }
+.aviso-flutuante.saindo { opacity: 0; transform: translateY(8px); }
+
+/* Linha que acabou de mudar (ex.: pedido expedido) */
+.pagina-modulo .tabela tr.destaque-ok td { animation: linha-ok 2.4s ease-out; }
+
+@keyframes aviso-entrar { from { opacity: 0; transform: translateY(12px); } }
+@keyframes linha-ok { 0%, 40% { background: #dff3e6; } 100% { background: transparent; } }
+
+@media (max-width: 560px) {
+  .avisos-flutuantes { right: 16px; left: 16px; bottom: 16px; max-width: none; }
 }
 
 /* Os valores em R$ não podem alargar a página em telas pequenas */

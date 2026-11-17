@@ -39,37 +39,33 @@ async function somarEstoque(produtoId, enderecoId, quantidade, conexao = db) {
 
 // 2.1. Criar a função de subtrair estoque
 // conexao (opcional): passe a conexão de uma transação para a operação fazer parte dela
+// A baixa é atômica: o UPDATE só acontece se houver saldo suficiente (o estoque nunca fica negativo,
+// nem com duas expedições ao mesmo tempo). Só lê o saldo quando a baixa falha, para explicar o motivo.
+// Em caso de falta, o erro traz "disponivel" com o saldo atual.
 async function subtrairEstoque(produtoId, enderecoId, quantidade, conexao = db) {
     try {
-        //Verificar se o produto já existe neste endereço
+        const [resultado] = await conexao.execute(
+            'UPDATE estoque SET quantidade = quantidade - ? WHERE produto_id = ? AND endereco_id = ? AND quantidade >= ?',
+            [quantidade, produtoId, enderecoId, quantidade]
+        );
+
+        if (resultado.affectedRows === 1) {
+            return { sucesso: true, mensagem: 'Estoque atualizado com sucesso.' };
+        }
+
+        // Não baixou: descobre se o produto não está no endereço ou se falta saldo
         const [linhas] = await conexao.execute(
             'SELECT quantidade FROM estoque WHERE produto_id = ? AND endereco_id = ?',
             [produtoId, enderecoId]
         );
-
-        if (linhas.length > 0) {
-            //O produto já existe. Fazer um UPDATE subtraindo a quantidade.
-
-            //Definir a nova quantidade
-            quantidade = linhas[0].quantidade - quantidade
-            //Verificando se a quantidade vai ser suficiente
-            if (quantidade >= 0) {
-                await conexao.execute(
-                    'UPDATE estoque SET quantidade = ? WHERE produto_id = ? AND endereco_id = ?',
-                [quantidade, produtoId, enderecoId]
-                )
-            } else {
-                    throw new Error('Estoque Insuficiente');
-            }
-            
-        } else {
-            //O produto não existe neste endereço.
+        if (linhas.length === 0) {
             throw new Error('Produto não encontrado neste endereço');
         }
-
-        return { sucesso: true, mensagem: 'Estoque atualizado com sucesso.' };
+        const erro = new Error('Estoque Insuficiente');
+        erro.disponivel = linhas[0].quantidade;
+        throw erro;
     } catch (erro) {
-        console.error('Erro ao subtrair estoque:', erro);
+        console.error('Erro ao subtrair estoque:', erro.message);
         throw erro; // Lança o erro para quem chamou a função poder tratar
     }
 }
