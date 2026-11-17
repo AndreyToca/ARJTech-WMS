@@ -5,44 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS - Estoque</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/modulos.css">
 </head>
-<body>
+<body class="pagina-menu pagina-modulo" data-modulo="estoque">
   <!--
     TELA: Estoque  —  Responsável: FELIPE
-    PASSO A PASSO
-    1. Criar um campo de busca por produto.
-    2. Criar a tabela com: produto, endereço e quantidade.
-    3. (Extra) Destacar em vermelho produtos com estoque baixo.
-    4. A lógica fica no arquivo public/js/estoque.js.
+    Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
+    A lógica fica no arquivo public/js/estoque.js.
   -->
 
-  <header>
-    <a href="/index.html">WMS</a>
-    <h1>Estoque</h1>
-  </header>
-
   <main>
-    <!-- 1. Campo de busca por produto -->
-    <div style="margin-bottom: 20px;">
-        <label for="busca-produto">Buscar produto:</label>
-        <input type="text" id="busca-produto" placeholder="Nome do produto...">
+    <div class="cabecalho">
+      <h1>Estoque</h1>
+      <p>Saldo atual por produto e endereço. Linhas em vermelho: menos de 10 unidades.</p>
     </div>
 
-    <!-- 2. Tabela com: produto, endereço e quantidade -->
-    <table border="1" style="width: 100%; text-align: left; border-collapse: collapse;">
-        <thead>
+    <!-- Resumo (preenchido pelo estoque.js; acompanha a busca) -->
+    <section class="indicadores" id="indicadores-estoque" aria-label="Resumo do estoque"></section>
+
+    <section class="bloco" aria-labelledby="titulo-saldos">
+      <div class="bloco-topo">
+        <h2 id="titulo-saldos">Saldos</h2>
+        <label class="filtro">Buscar
+          <input type="search" id="busca-produto" placeholder="Produto, código ou endereço">
+        </label>
+      </div>
+      <div class="tabela-rolagem">
+        <table class="tabela">
+          <thead>
             <tr>
-                <th>Produto</th>
-                <th>Endereço</th>
-                <th>Quantidade</th>
+              <th>Código</th>
+              <th>Produto</th>
+              <th>Endereço</th>
+              <th class="num">Quantidade</th>
+              <th class="num">Custo médio</th>
+              <th class="num">Preço de venda</th>
+              <th class="num">Valor em estoque</th>
             </tr>
-        </thead>
-        <tbody id="tbody-estoque">
-            <!-- O JavaScript vai injetar as linhas aqui -->
-        </tbody>
-    </table>
+          </thead>
+          <tbody id="tbody-estoque"></tbody>
+          <tfoot>
+            <tr>
+              <th colspan="6" class="num">Valor total em estoque</th>
+              <th class="num" id="total-estoque">R$ 0,00</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
   </main>
 
+  <script src="/js/layout.js"></script>
   <script src="/js/estoque.js"></script>
 </body>
 </html>

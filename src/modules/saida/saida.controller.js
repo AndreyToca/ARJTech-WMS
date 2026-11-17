@@ -45,6 +45,14 @@ function inteiroPositivo(valor) {
     return n > 0 && n <= 2147483647 ? n : null;
 }
 
+// Converte "12,50", "12.50" ou 12.5 em número >= 0 com até 2 casas; qualquer outra coisa vira null.
+function valorMonetario(valor) {
+    const texto = String(valor ?? '').trim().replace(',', '.');
+    if (!/^\d+(\.\d{1,2})?$/.test(texto)) return null;
+    const n = Number(texto);
+    return Number.isFinite(n) && n <= 9999999999 ? n : null;
+}
+
 function responderErro(res, erro, acao) {
     if (erro instanceof ErroNegocio) {
         return res.status(erro.status).json({ erro: erro.message });
@@ -59,13 +67,23 @@ function responderErro(res, erro, acao) {
 // POST /api/saida  — registra o pedido como pendente (NÃO mexe no estoque)
 async function criarPedido(req, res) {
     try {
-        const { produto_id, endereco_id, quantidade, cliente, usuario_id } = req.body || {};
+        const { produto_id, endereco_id, quantidade, cliente, cliente_id, usuario_id, preco_unitario } = req.body || {};
 
         const produtoId = inteiroPositivo(produto_id);
         const enderecoId = inteiroPositivo(endereco_id);
         const usuarioId = inteiroPositivo(usuario_id);
         const qtd = inteiroPositivo(quantidade);
-        const nomeCliente = typeof cliente === 'string' ? cliente.trim() : '';
+        let nomeCliente = typeof cliente === 'string' ? cliente.trim() : '';
+        const clienteInformado = cliente_id !== undefined && cliente_id !== null && cliente_id !== '';
+        const clienteId = clienteInformado ? inteiroPositivo(cliente_id) : null;
+        if (clienteInformado && !clienteId) return res.status(400).json({ erro: 'Cliente inválido.' });
+
+        // Com cliente_id (tela de Saída), o nome vem do cadastro de clientes
+        if (clienteId) {
+            const [clientes] = await db.execute('SELECT nome FROM clientes WHERE id = ?', [clienteId]);
+            if (clientes.length === 0) return res.status(400).json({ erro: 'Cliente não encontrado.' });
+            nomeCliente = clientes[0].nome;
+        }
 
         if (!produtoId) return res.status(400).json({ erro: 'Produto inválido.' });
         if (!enderecoId) return res.status(400).json({ erro: 'Endereço inválido.' });
@@ -74,9 +92,22 @@ async function criarPedido(req, res) {
         if (nomeCliente.length > 150) return res.status(400).json({ erro: 'O nome do cliente deve ter no máximo 150 caracteres.' });
         if (!usuarioId) return res.status(400).json({ erro: 'Usuário responsável inválido. Faça login novamente.' });
 
+        // Preço é opcional: se não vier, usa o preço de venda do cadastro do produto
+        const precoInformado = preco_unitario !== undefined && preco_unitario !== null && preco_unitario !== '';
+        const precoUnitario = precoInformado ? valorMonetario(preco_unitario) : null;
+        if (precoInformado && precoUnitario === null) {
+            return res.status(400).json({ erro: 'Preço unitário inválido (use um valor maior ou igual a zero, com até 2 casas).' });
+        }
+
         // Confere se produto, endereço e usuário existem (respeita as chaves estrangeiras)
-        const [produto] = await db.execute('SELECT id FROM produtos WHERE id = ?', [produtoId]);
+        const [produto] = await db.execute('SELECT id, preco_venda, cliente_id FROM produtos WHERE id = ?', [produtoId]);
         if (produto.length === 0) return res.status(400).json({ erro: 'Produto não encontrado.' });
+
+        // O produto precisa pertencer ao cliente do pedido
+        if (clienteId && produto[0].cliente_id !== null && Number(produto[0].cliente_id) !== clienteId) {
+            return res.status(400).json({ erro: 'Este produto não pertence ao cliente selecionado.' });
+        }
+        const precoFinal = precoInformado ? precoUnitario : Number(produto[0].preco_venda);
 
         const [endereco] = await db.execute('SELECT id FROM enderecos WHERE id = ?', [enderecoId]);
         if (endereco.length === 0) return res.status(400).json({ erro: 'Endereço não encontrado.' });
@@ -85,8 +116,8 @@ async function criarPedido(req, res) {
         if (usuario.length === 0) return res.status(400).json({ erro: 'Usuário não encontrado.' });
 
         const [resultado] = await db.execute(
-            'INSERT INTO saidas (produto_id, endereco_id, quantidade, cliente, status, usuario_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [produtoId, enderecoId, qtd, nomeCliente, STATUS_INICIAL, usuarioId]
+            'INSERT INTO saidas (produto_id, endereco_id, quantidade, preco_unitario, cliente, status, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [produtoId, enderecoId, qtd, precoFinal, nomeCliente, STATUS_INICIAL, usuarioId]
         );
 
         return res.status(201).json({ mensagem: 'Pedido criado com status pendente.', id: resultado.insertId });
@@ -137,16 +168,23 @@ async function expedirPedido(req, res) {
         // 4. Baixa pelo módulo de estoque, na MESMA conexão/transação
         await subtrairEstoque(pedido.produto_id, pedido.endereco_id, pedido.quantidade, conexao);
 
-        // 5. Marca como expedido (a condição status = 'pendente' é uma segunda trava)
+        // 5. Guarda o custo médio do produto neste momento (custo da mercadoria vendida)
+        const [custo] = await conexao.execute(
+            'SELECT custo_medio FROM produtos WHERE id = ?',
+            [pedido.produto_id]
+        );
+        const custoUnitario = custo.length ? Number(custo[0].custo_medio) : 0;
+
+        // 6. Marca como expedido (a condição status = 'pendente' é uma segunda trava)
         const [atualizacao] = await conexao.execute(
-            'UPDATE saidas SET status = ? WHERE id = ? AND status = ?',
-            [STATUS_EXPEDIDO, id, STATUS_INICIAL]
+            'UPDATE saidas SET status = ?, custo_unitario = ? WHERE id = ? AND status = ?',
+            [STATUS_EXPEDIDO, custoUnitario, id, STATUS_INICIAL]
         );
         if (atualizacao.affectedRows !== 1) {
             throw new ErroNegocio(409, 'Não foi possível atualizar o pedido. Tente novamente.');
         }
 
-        // 6. Tudo certo: confirma baixa e status juntos
+        // 7. Tudo certo: confirma baixa e status juntos
         await conexao.commit();
         return res.json({ mensagem: 'Pedido expedido com sucesso.', id, status: STATUS_EXPEDIDO });
     } catch (erro) {
@@ -166,6 +204,8 @@ async function listarPedidos(req, res) {
         let sql =
             'SELECT s.id, s.produto_id, p.codigo AS produto_codigo, p.nome AS produto_nome, p.unidade, ' +
             's.endereco_id, e.codigo AS endereco_codigo, s.quantidade, s.cliente, s.status, s.data, ' +
+            's.preco_unitario, s.custo_unitario, ROUND(s.quantidade * s.preco_unitario, 2) AS valor_total, ' +
+            'ROUND(s.quantidade * s.custo_unitario, 2) AS custo_total, ' +
             's.usuario_id, u.nome AS usuario_nome ' +
             'FROM saidas s ' +
             'INNER JOIN produtos p ON s.produto_id = p.id ' +

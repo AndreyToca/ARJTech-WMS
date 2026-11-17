@@ -2,7 +2,8 @@
  * LÓGICA DA TELA: saida  —  Responsável: GABRIEL
  *
  * PASSO A PASSO
- * 1. Ao abrir a página, carregar o select de produtos (rota do Ygor).
+ * 1. Ao abrir a página, carregar clientes, produtos e endereços (rotas do Ygor).
+ *    Ao escolher o cliente, o select de produtos mostra só os produtos dele.
  * 2. Carregar a tabela de pedidos com GET /api/saida.
  * 3. No "Criar pedido", enviar POST /api/saida e recarregar a tabela.
  * 4. No "Expedir", enviar PUT /api/saida/:id/expedir.
@@ -22,6 +23,20 @@ const ROTULO_STATUS = {
   cancelado: 'Cancelado'
 };
 
+// Cor do status, igual ao Painel (verde = ok, âmbar = atenção, vermelho = problema)
+const COR_STATUS = {
+  pendente: 'atencao',
+  separado: 'neutro',
+  enviado: 'ok',
+  cancelado: 'problema'
+};
+
+// Guarda os produtos para preencher o preço de venda ao escolher um item
+let produtosCarregados = [];
+
+const formatarMoeda = (valor) =>
+  Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
 function usuarioLogado() {
   try {
     const usuario = JSON.parse(localStorage.getItem('usuario'));
@@ -36,7 +51,7 @@ function usuarioLogado() {
 function mostrarMensagem(texto, tipo) {
   const caixa = $('mensagem');
   caixa.textContent = texto;
-  caixa.className = 'msg ' + tipo;
+  caixa.className = 'aviso ' + tipo;
 }
 
 async function chamarApi(url, opcoes) {
@@ -74,28 +89,58 @@ function preencherSelect(select, itens, rotulo) {
 
 async function carregarSelects() {
   try {
-    const [produtos, enderecos] = await Promise.all([
+    const [clientes, produtos, enderecos] = await Promise.all([
+      chamarApi('/api/cadastros/clientes'),
       chamarApi('/api/cadastros/produtos'),
       chamarApi('/api/cadastros/enderecos')
     ]);
 
-    preencherSelect(
-      $('produto'),
-      produtos,
-      (p) => `${p.codigo ? p.codigo + ' - ' : ''}${p.nome}`
-    );
+    produtosCarregados = produtos;
 
+    preencherSelect(
+      $('cliente'),
+      clientes,
+      (c) => c.cidade ? `${c.nome} (${c.cidade})` : c.nome
+    );
     preencherSelect($('endereco'), enderecos, (e) => e.codigo);
+    filtrarProdutosDoCliente();
   } catch (erro) {
     mostrarMensagem(
-      'Não foi possível carregar produtos e endereços: ' + erro.message,
+      'Não foi possível carregar clientes, produtos e endereços: ' + erro.message,
       'erro'
     );
   }
 }
 
-function celula(linha, texto) {
+// Mostra no select de produtos só os produtos do cliente escolhido
+function filtrarProdutosDoCliente() {
+  const clienteId = $('cliente').value;
+  const select = $('produto');
+
+  if (!clienteId) {
+    select.innerHTML = '<option value="">Escolha o cliente primeiro</option>';
+    select.disabled = true;
+    preencherPreco();
+    return;
+  }
+
+  const doCliente = produtosCarregados.filter((p) => String(p.cliente_id) === clienteId);
+
+  if (doCliente.length === 0) {
+    select.innerHTML = '<option value="">Este cliente não tem produtos</option>';
+    select.disabled = true;
+  } else {
+    preencherSelect(select, doCliente, (p) => `${p.codigo ? p.codigo + ' - ' : ''}${p.nome}`);
+    select.disabled = false;
+    // Só um produto: já deixa escolhido
+    if (doCliente.length === 1) select.value = String(doCliente[0].id);
+  }
+  preencherPreco();
+}
+
+function celula(linha, texto, classe) {
   const td = document.createElement('td');
+  if (classe) td.className = classe;
   td.textContent = texto == null ? '' : String(texto);
   linha.appendChild(td);
   return td;
@@ -119,8 +164,8 @@ async function carregarPedidos() {
 
     if (pedidos.length === 0) {
       const linha = document.createElement('tr');
-      const td = celula(linha, 'Nenhum pedido encontrado.');
-      td.colSpan = 8;
+      const td = celula(linha, 'Nenhum pedido encontrado.', 'vazio');
+      td.colSpan = 11;
       corpo.appendChild(linha);
       return;
     }
@@ -128,15 +173,41 @@ async function carregarPedidos() {
     pedidos.forEach((pedido) => {
       const linha = document.createElement('tr');
 
-      celula(linha, pedido.id);
-      celula(linha, pedido.produto_nome);
-      celula(linha, pedido.endereco_codigo);
-      celula(linha, `${pedido.quantidade} ${pedido.unidade || ''}`.trim());
+      celula(linha, pedido.id, 'secundario');
+      celula(linha, pedido.produto_nome, 'descricao');
+      celula(linha, pedido.endereco_codigo, 'cod');
+
+      const qtd = celula(linha, pedido.quantidade, 'num');
+      if (pedido.unidade) {
+        const unidade = document.createElement('span');
+        unidade.className = 'unidade';
+        unidade.textContent = pedido.unidade.toLowerCase();
+        qtd.appendChild(unidade);
+      }
+
+      celula(linha, formatarMoeda(pedido.preco_unitario), 'num');
+      celula(linha, formatarMoeda(pedido.valor_total), 'num');
+
+      // Margem só existe depois de expedido (quando o custo é gravado)
+      if (pedido.custo_total == null) {
+        celula(linha, '-', 'num secundario');
+      } else {
+        const margem = Number(pedido.valor_total) - Number(pedido.custo_total);
+        celula(linha, formatarMoeda(margem), margem < 0 ? 'num valor-problema' : 'num valor-ok');
+      }
+
       celula(linha, pedido.cliente);
-      celula(linha, ROTULO_STATUS[pedido.status] || pedido.status);
+
+      const status = celula(linha, '');
+      const etiqueta = document.createElement('span');
+      etiqueta.className = 'estado ' + (COR_STATUS[pedido.status] || 'neutro');
+      const ponto = document.createElement('span');
+      ponto.className = 'status-ponto';
+      etiqueta.append(ponto, ROTULO_STATUS[pedido.status] || pedido.status);
+      status.appendChild(etiqueta);
 
       const data = pedido.data ? new Date(pedido.data).toLocaleString('pt-BR') : '';
-      celula(linha, data);
+      celula(linha, data, 'secundario');
 
       const acao = celula(linha, '');
 
@@ -151,6 +222,10 @@ async function carregarPedidos() {
       corpo.appendChild(linha);
     });
   } catch (erro) {
+    corpo.innerHTML = '';
+    const linha = document.createElement('tr');
+    celula(linha, 'Não foi possível carregar os pedidos.', 'vazio').colSpan = 11;
+    corpo.appendChild(linha);
     mostrarMensagem('Não foi possível carregar os pedidos: ' + erro.message, 'erro');
   }
 }
@@ -178,15 +253,21 @@ async function criarPedido(evento) {
   const produto = $('produto').value;
   const endereco = $('endereco').value;
   const quantidade = Number($('quantidade').value);
-  const cliente = $('cliente').value.trim();
+  const clienteId = $('cliente').value;
+  const preco = $('preco').value.trim();
 
   if (!usuario) {
     mostrarMensagem('Faça login antes de criar um pedido.', 'erro');
     return;
   }
 
+  if (!clienteId) {
+    mostrarMensagem('Selecione o cliente.', 'erro');
+    return;
+  }
+
   if (!produto) {
-    mostrarMensagem('Selecione um produto.', 'erro');
+    mostrarMensagem('Selecione um produto do cliente.', 'erro');
     return;
   }
 
@@ -200,8 +281,8 @@ async function criarPedido(evento) {
     return;
   }
 
-  if (!cliente) {
-    mostrarMensagem('Informe o nome do cliente.', 'erro');
+  if (preco !== '' && !(Number(preco) >= 0)) {
+    mostrarMensagem('Informe um preço unitário maior ou igual a zero.', 'erro');
     return;
   }
 
@@ -216,8 +297,10 @@ async function criarPedido(evento) {
         produto_id: Number(produto),
         endereco_id: Number(endereco),
         quantidade,
-        cliente,
-        usuario_id: Number(usuario.id)
+        cliente_id: Number(clienteId),
+        usuario_id: Number(usuario.id),
+        // vazio = o servidor usa o preço de venda do cadastro
+        preco_unitario: preco === '' ? undefined : preco
       })
     });
 
@@ -226,8 +309,9 @@ async function criarPedido(evento) {
       'sucesso'
     );
 
+    // Mantém cliente e produto escolhidos para agilizar o próximo pedido
     $('quantidade').value = '';
-    $('cliente').value = '';
+    preencherPreco();
 
     await carregarPedidos();
   } catch (erro) {
@@ -235,6 +319,12 @@ async function criarPedido(evento) {
   } finally {
     botao.disabled = false;
   }
+}
+
+// Ao escolher o produto, sugere o preço de venda do cadastro (pode ser alterado)
+function preencherPreco() {
+  const produto = produtosCarregados.find((p) => String(p.id) === $('produto').value);
+  $('preco').value = produto ? Number(produto.preco_venda || 0).toFixed(2) : '';
 }
 
 function iniciar() {
@@ -245,6 +335,8 @@ function iniciar() {
     : 'Nenhum usuário logado. Faça login para criar pedidos.';
 
   $('form-pedido').addEventListener('submit', criarPedido);
+  $('produto').addEventListener('change', preencherPreco);
+  $('cliente').addEventListener('change', filtrarProdutosDoCliente);
   $('filtro-status').addEventListener('change', carregarPedidos);
 
   carregarSelects();

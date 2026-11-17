@@ -1,29 +1,83 @@
 /*
  * LÓGICA DA TELA: estoque  —  Responsável: FELIPE
  *
- * PASSO A PASSO
  * 1. Ao abrir a página, buscar GET /api/estoque e preencher a tabela.
- * 2. Ao digitar na busca, filtrar as linhas da tabela pelo nome do produto.
- * 3. (Extra) Pintar de vermelho as linhas com quantidade baixa.
- *
- * Dica: use fetch('/api/...') para chamar o servidor e
- * async/await para esperar a resposta.
+ * 2. Ao digitar na busca, filtrar as linhas (produto, código ou endereço).
+ * 3. Destacar em vermelho as linhas com quantidade baixa.
+ * 4. A busca do topo (Painel) chega aqui como ?produto=... ou ?endereco=...
  */
-// Variável global para guardar os dados e permitir o filtro sem ir à base de dados várias vezes
+
+const ESTOQUE_BAIXO = 10;
+
+// Variável global para guardar os dados e permitir o filtro sem ir ao banco várias vezes
 let todosProdutos = [];
 
-// 1. Buscar os dados ao servidor
+const formatarMoeda = (valor) =>
+    Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function celula(linha, texto, classe) {
+    const td = document.createElement('td');
+    if (classe) td.className = classe;
+    td.textContent = texto == null ? '' : String(texto);
+    linha.appendChild(td);
+    return td;
+}
+
+// 1. Buscar os dados no servidor
 async function carregarEstoque() {
     try {
-        const resposta = await fetch('/api/estoque'); 
+        const resposta = await fetch('/api/estoque');
+        if (!resposta.ok) throw new Error(`Erro do servidor (${resposta.status}).`);
         todosProdutos = await resposta.json();
-        
-        // Renderiza a tabela inicial com todos os produtos
-        renderizarTabela(todosProdutos);
+        filtrar();
     } catch (erro) {
-        console.error("Erro ao carregar o estoque:", erro);
-        alert("Erro ao ligar à API. O servidor Node.js está a correr?");
+        console.error('Erro ao carregar o estoque:', erro);
+        document.getElementById('indicadores-estoque').innerHTML = '';
+        const tabelaBody = document.getElementById('tbody-estoque');
+        tabelaBody.innerHTML = '';
+        const linha = document.createElement('tr');
+        celula(linha, 'Não foi possível carregar o estoque. O servidor está rodando?', 'vazio').colSpan = 7;
+        tabelaBody.appendChild(linha);
     }
+}
+
+// Resumo no topo, no mesmo formato dos indicadores do Painel
+function renderizarIndicadores(produtos) {
+    const quantidade = produtos.reduce((soma, p) => soma + Number(p.quantidade || 0), 0);
+    const custo = produtos.reduce((soma, p) => soma + Number(p.valor_total || 0), 0);
+    const venda = produtos.reduce((soma, p) => soma + Number(p.quantidade || 0) * Number(p.preco_venda || 0), 0);
+    const baixos = produtos.filter(p => Number(p.quantidade) < ESTOQUE_BAIXO).length;
+
+    const itens = [
+        { valor: produtos.length.toLocaleString('pt-BR'), rotulo: 'Posições com saldo', detalhe: `${quantidade.toLocaleString('pt-BR')} unidades no total`, status: '' },
+        { valor: formatarMoeda(custo), rotulo: 'Valor em estoque (custo)', detalhe: 'Quantidade × custo médio', status: '' },
+        { valor: formatarMoeda(venda), rotulo: 'Valor de venda', detalhe: venda > 0 ? `Margem potencial ${formatarMoeda(venda - custo)}` : 'Sem preço de venda cadastrado', status: venda >= custo ? 'ok' : 'problema' },
+        { valor: baixos.toLocaleString('pt-BR'), rotulo: 'Estoque baixo', detalhe: `Menos de ${ESTOQUE_BAIXO} unidades`, status: baixos > 0 ? 'problema' : 'ok' },
+    ];
+
+    const area = document.getElementById('indicadores-estoque');
+    area.innerHTML = '';
+    itens.forEach(item => {
+        const bloco = document.createElement('div');
+        bloco.className = 'indicador';
+
+        const valor = document.createElement('span');
+        valor.className = 'indicador-valor';
+        valor.textContent = item.valor;
+
+        const rotulo = document.createElement('span');
+        rotulo.className = 'indicador-rotulo';
+        rotulo.textContent = item.rotulo;
+
+        const detalhe = document.createElement('span');
+        detalhe.className = `indicador-detalhe ${item.status}`;
+        const ponto = document.createElement('span');
+        ponto.className = 'status-ponto';
+        detalhe.append(ponto, item.detalhe);
+
+        bloco.append(valor, rotulo, detalhe);
+        area.appendChild(bloco);
+    });
 }
 
 // Função para desenhar a tabela
@@ -31,37 +85,56 @@ function renderizarTabela(produtos) {
     const tabelaBody = document.getElementById('tbody-estoque');
     tabelaBody.innerHTML = '';
 
+    // Soma o valor das linhas exibidas (acompanha o filtro da busca)
+    const total = produtos.reduce((soma, p) => soma + Number(p.valor_total || 0), 0);
+    document.getElementById('total-estoque').textContent = formatarMoeda(total);
+    renderizarIndicadores(produtos);
+
+    if (produtos.length === 0) {
+        const linha = document.createElement('tr');
+        celula(linha, 'Nenhum item encontrado.', 'vazio').colSpan = 7;
+        tabelaBody.appendChild(linha);
+        return;
+    }
+
     produtos.forEach(produto => {
         const linha = document.createElement('tr');
 
-        // 3. (Extra): Pintar de vermelho se a quantidade for baixa
-        if (produto.quantidade < 10) {
-            linha.style.backgroundColor = '#ffe6e6';
-            linha.style.color = '#cc0000';
-        }
+        // 3. Destaca em vermelho se a quantidade for baixa
+        if (Number(produto.quantidade) < ESTOQUE_BAIXO) linha.className = 'baixo';
 
-        // Preenche as 3 colunas exigidas pelo HTML
-        linha.innerHTML = `
-            <td>${produto.nome}</td>
-            <td>${produto.endereco_id}</td>
-            <td>${produto.quantidade}</td>
-        `;
+        celula(linha, produto.codigo, 'cod');
+        celula(linha, produto.nome, 'descricao');
+        celula(linha, produto.endereco_codigo || produto.endereco_id, 'cod');
+        const qtd = celula(linha, Number(produto.quantidade).toLocaleString('pt-BR'), 'num qtd');
+        if (produto.unidade) {
+            const unidade = document.createElement('span');
+            unidade.className = 'unidade';
+            unidade.textContent = produto.unidade.toLowerCase();
+            qtd.appendChild(unidade);
+        }
+        celula(linha, formatarMoeda(produto.custo_medio), 'num');
+        celula(linha, formatarMoeda(produto.preco_venda), 'num');
+        celula(linha, formatarMoeda(produto.valor_total), 'num');
         tabelaBody.appendChild(linha);
     });
 }
 
-// 2. Filtrar as linhas ao digitar na busca
-document.getElementById('busca-produto').addEventListener('input', (evento) => {
-    const termoBusca = evento.target.value.toLowerCase();
-    
-    // Filtra o array guardado em memória
-    const produtosFiltrados = todosProdutos.filter(produto => 
-        produto.nome.toLowerCase().includes(termoBusca)
+// 2. Filtrar as linhas pelo texto da busca
+function filtrar() {
+    const termo = document.getElementById('busca-produto').value.trim().toLowerCase();
+    const filtrados = todosProdutos.filter(p =>
+        [p.nome, p.codigo, p.endereco_codigo].some(campo => String(campo || '').toLowerCase().includes(termo))
     );
-    
-    // Redesenha a tabela apenas com os produtos filtrados
-    renderizarTabela(produtosFiltrados);
-});
+    renderizarTabela(filtrados);
+}
 
-// Arranca a função principal quando a página HTML terminar de carregar
+document.getElementById('busca-produto').addEventListener('input', filtrar);
+
+// Busca vinda do topo: /pages/estoque.html?produto=P001 ou ?endereco=A-01-1
+const parametros = new URLSearchParams(window.location.search);
+const termoInicial = parametros.get('produto') || parametros.get('endereco');
+if (termoInicial) document.getElementById('busca-produto').value = termoInicial;
+
+// Começa quando a página HTML terminar de carregar
 document.addEventListener('DOMContentLoaded', carregarEstoque);

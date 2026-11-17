@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS - Endereços</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/modulos.css">
+</head>
+<body class="pagina-menu pagina-modulo" data-modulo="enderecos">
+    <!--
+      TELA: Cadastro de endereços  —  Responsável: YGOR
+      Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
+      A lógica fica em public/js/enderecos.js (+ cadastros-comum.js).
+    -->
+
+    <main>
+        <div class="cabecalho">
+            <h1>Endereços</h1>
+            <p>Locais do armazém. O código é montado com rua, prateleira e nível (ex.: A-01-2).</p>
+        </div>
+
+        <section class="bloco" aria-labelledby="titulo-form-endereco">
+            <div class="bloco-topo">
+                <h2 id="titulo-form-endereco">Cadastro de endereço</h2>
+            </div>
+
+            <div class="bloco-corpo">
+                <form id="form-endereco" class="formulario">
+                    <input type="hidden" id="endereco-id">
+
+                    <div class="campo">
+                        <label for="endereco-rua">Rua</label>
+                        <input type="text" id="endereco-rua" maxlength="10" placeholder="Ex.: A" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="endereco-prateleira">Prateleira</label>
+                        <input type="text" id="endereco-prateleira" maxlength="10" placeholder="Ex.: 01" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="endereco-nivel">Nível</label>
+                        <input type="text" id="endereco-nivel" maxlength="10" placeholder="Ex.: 2" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="endereco-codigo">Código gerado</label>
+                        <input type="text" id="endereco-codigo" placeholder="Preencha os campos ao lado" readonly>
+                    </div>
+
+                    <div class="botoes">
+                        <button type="submit" id="botao-endereco">Salvar endereço</button>
+                        <button type="reset" class="secundario">Limpar</button>
+                    </div>
+                </form>
+
+                <p id="mensagem-endereco" class="aviso" role="status"></p>
+            </div>
+        </section>
+
+        <section class="bloco" aria-labelledby="titulo-lista-enderecos">
+            <div class="bloco-topo">
+                <h2 id="titulo-lista-enderecos">Endereços cadastrados <span class="contador" id="total-enderecos"></span></h2>
+                <label class="filtro">Buscar
+                    <input type="search" id="busca-endereco" placeholder="Código, rua, prateleira...">
+                </label>
+            </div>
+            <div class="tabela-rolagem">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Código</th>
+                            <th>Rua</th>
+                            <th>Prateleira</th>
+                            <th>Nível</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-enderecos"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/cadastros-comum.js"></script>
+    <script src="/js/enderecos.js"></script>
+</body>
+</html>

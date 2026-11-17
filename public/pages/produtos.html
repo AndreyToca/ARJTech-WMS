@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS - Produtos</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/modulos.css">
+</head>
+<body class="pagina-menu pagina-modulo" data-modulo="produtos">
+    <!--
+      TELA: Cadastro de produtos  —  Responsável: YGOR
+      Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
+      A lógica fica em public/js/produtos.js (+ cadastros-comum.js).
+    -->
+
+    <main>
+        <div class="cabecalho">
+            <h1>Produtos</h1>
+            <p>Cada produto pertence a um cliente. O código é gerado automaticamente e o custo médio vem das entradas.</p>
+        </div>
+
+        <section class="bloco" aria-labelledby="titulo-form-produto">
+            <div class="bloco-topo">
+                <h2 id="titulo-form-produto">Cadastro de produto</h2>
+            </div>
+
+            <div class="bloco-corpo">
+                <form id="form-produto" class="formulario">
+                    <input type="hidden" id="produto-id">
+
+                    <div class="campo">
+                        <label for="produto-codigo">Código</label>
+                        <input type="text" id="produto-codigo" maxlength="30" placeholder="Gerado automaticamente" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label for="produto-cliente">Cliente (dono da mercadoria)</label>
+                        <select id="produto-cliente" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="produto-nome">Nome do produto</label>
+                        <input type="text" id="produto-nome" maxlength="150" placeholder="Ex.: Caixa de papelão" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="produto-unidade">Unidade</label>
+                        <select id="produto-unidade" required>
+                            <option value="">Selecione a unidade</option>
+                            <option value="UN">UN — Unidade</option>
+                            <option value="CX">CX — Caixa</option>
+                            <option value="KG">KG — Quilograma</option>
+                            <option value="L">L — Litro</option>
+                            <option value="M">M — Metro</option>
+                            <option value="PCT">PCT — Pacote</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="produto-preco">Preço de venda (R$)</label>
+                        <input type="number" id="produto-preco" min="0" step="0.01" placeholder="0,00">
+                    </div>
+
+                    <div class="botoes">
+                        <button type="submit" id="botao-produto">Salvar produto</button>
+                        <button type="reset" class="secundario">Limpar</button>
+                    </div>
+                </form>
+
+                <p id="mensagem-produto" class="aviso" role="status"></p>
+            </div>
+        </section>
+
+        <section class="bloco" aria-labelledby="titulo-lista-produtos">
+            <div class="bloco-topo">
+                <h2 id="titulo-lista-produtos">Produtos cadastrados <span class="contador" id="total-produtos"></span></h2>
+                <label class="filtro">Buscar
+                    <input type="search" id="busca-produto" placeholder="Código, nome ou cliente">
+                </label>
+            </div>
+            <div class="tabela-rolagem">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Cliente</th>
+                            <th>Unidade</th>
+                            <th class="num">Custo médio</th>
+                            <th class="num">Preço de venda</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-produtos"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/cadastros-comum.js"></script>
+    <script src="/js/produtos.js"></script>
+</body>
+</html>

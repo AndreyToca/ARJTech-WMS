@@ -4,64 +4,94 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS - Entrada de Mercadoria</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/modulos.css">
 </head>
-<body>
-  <header>
-      <nav>
-          <a href="../index.html">WMS</a>
-          <span>Menu principal</span>
-      </nav>
-  </header>
-  <main >
+<body class="pagina-menu pagina-modulo" data-modulo="entrada">
+  <!--
+    TELA: Entrada de Mercadoria  —  Responsável: LUCAS
+    Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
+    A lógica fica no arquivo public/js/entrada.js.
+  -->
+
   <main>
-    <h2>Entrada de Mercadoria</h2>
-    
-    <form id="formEntrada" style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; max-width: 500px;">
-        <div style="margin-bottom: 15px;">
-            <label for="produto_id">Produto:</label><br>
-            <select id="produto_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                <option value="">Selecione um produto...</option>
+    <div class="cabecalho">
+      <h1>Entrada de mercadoria</h1>
+      <p>A entrada soma no estoque e atualiza o custo médio do produto.</p>
+    </div>
+
+    <section class="bloco" aria-labelledby="titulo-nova-entrada">
+      <div class="bloco-topo">
+        <h2 id="titulo-nova-entrada">Registrar entrada</h2>
+      </div>
+
+      <div class="bloco-corpo">
+        <form id="formEntrada" class="formulario">
+          <div class="campo">
+            <label for="produto_id">Produto</label>
+            <select id="produto_id" required>
+              <option value="">Selecione um produto...</option>
             </select>
-        </div>
-    
-        <div style="margin-bottom: 15px;">
-          <label for="endereco_id">Endereço de Armazenagem:</label><br>
-          <select id="endereco_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
-              <option value="">Selecione um Endereço...</option>
-          </select>    
-        </div>
+          </div>
 
-        <div style="margin-bottom: 15px;">
-            <label for="quantidade">Quantidade:</label><br>
-            <input type="number" id="quantidade" min="1" required style="width: 100%; padding: 8px; margin-top: 5px;">
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="nota_fiscal">Nota Fiscal:</label><br>
-            <input type="text" id="nota_fiscal" style="width: 100%; padding: 8px; margin-top: 5px;">
-        </div>
-        
-        <button type="submit" style="background: #004080; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">Registrar Entrada</button>
-    </form>
+          <div class="campo">
+            <label for="endereco_id">Endereço de armazenagem</label>
+            <select id="endereco_id" required>
+              <option value="">Selecione um endereço...</option>
+            </select>
+          </div>
 
-    <h3>Histórico de Entradas</h3>
-    <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-        <thead>
-            <tr style="background: #004080; color: white; text-align: left;">
-                <th style="padding: 8px;">ID</th>
-                <th style="padding: 8px;">Produto ID</th>
-                <th style="padding: 8px;">Endereço ID</th>
-                <th style="padding: 8px;">Quantidade</th>
-                <th style="padding: 8px;">Nota Fiscal</th>
-                <th style="padding: 8px;">Data</th>
-            </tr>    
-        </thead>
-        <tbody id="tabelaEntradas">
-        </tbody>
-    </table>
+          <div class="campo">
+            <label for="quantidade">Quantidade</label>
+            <input type="number" id="quantidade" min="1" step="1" required>
+          </div>
+
+          <div class="campo">
+            <label for="valor_unitario">Valor unitário (R$)</label>
+            <input type="number" id="valor_unitario" min="0" step="0.01" required placeholder="0,00">
+          </div>
+
+          <div class="campo">
+            <label for="nota_fiscal">Nota fiscal</label>
+            <input type="text" id="nota_fiscal" maxlength="50" placeholder="Ex.: NF-1001">
+          </div>
+
+          <div class="botoes">
+            <button type="submit" id="botao-entrada">Registrar entrada</button>
+          </div>
+        </form>
+
+        <p id="mensagem-entrada" class="aviso" role="status"></p>
+      </div>
+    </section>
+
+    <section class="bloco" aria-labelledby="titulo-historico">
+      <div class="bloco-topo">
+        <h2 id="titulo-historico">Histórico de entradas</h2>
+        <span class="contador" id="total-entradas"></span>
+      </div>
+      <div class="tabela-rolagem">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Data/hora</th>
+              <th>Produto</th>
+              <th>Endereço</th>
+              <th class="num">Qtd</th>
+              <th class="num">Valor unit.</th>
+              <th class="num">Valor total</th>
+              <th>Nota fiscal</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaEntradas"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <script src="../js/entrada.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/entrada.js"></script>
 </body>
 </html>

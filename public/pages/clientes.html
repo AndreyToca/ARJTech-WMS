@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS - Clientes</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/modulos.css">
+</head>
+<body class="pagina-menu pagina-modulo" data-modulo="clientes">
+    <!--
+      TELA: Cadastro de clientes  —  Responsável: YGOR
+      Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
+      A lógica fica em public/js/clientes.js (+ cadastros-comum.js).
+    -->
+
+    <main>
+        <div class="cabecalho">
+            <h1>Clientes</h1>
+            <p>Para quem a mercadoria é enviada. Aparecem como sugestão na tela de Saída.</p>
+        </div>
+
+        <section class="bloco" aria-labelledby="titulo-form-cliente">
+            <div class="bloco-topo">
+                <h2 id="titulo-form-cliente">Cadastro de cliente</h2>
+            </div>
+
+            <div class="bloco-corpo">
+                <form id="form-cliente" class="formulario">
+                    <input type="hidden" id="cliente-id">
+
+                    <div class="campo">
+                        <label for="cliente-nome">Nome / razão social</label>
+                        <input type="text" id="cliente-nome" maxlength="150" placeholder="Ex.: Mercado Bom" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="cliente-documento">CPF ou CNPJ</label>
+                        <input type="text" id="cliente-documento" inputmode="numeric" maxlength="18" placeholder="Opcional">
+                    </div>
+
+                    <div class="campo">
+                        <label for="cliente-telefone">Telefone</label>
+                        <input type="tel" id="cliente-telefone" maxlength="20" placeholder="(11) 99999-0000">
+                    </div>
+
+                    <div class="campo">
+                        <label for="cliente-email">E-mail</label>
+                        <input type="email" id="cliente-email" maxlength="150" placeholder="contato@empresa.com">
+                    </div>
+
+                    <div class="campo">
+                        <label for="cliente-cidade">Cidade</label>
+                        <input type="text" id="cliente-cidade" maxlength="100" placeholder="Ex.: Campinas">
+                    </div>
+
+                    <div class="botoes">
+                        <button type="submit" id="botao-cliente">Salvar cliente</button>
+                        <button type="reset" class="secundario">Limpar</button>
+                    </div>
+                </form>
+
+                <p id="mensagem-cliente" class="aviso" role="status"></p>
+            </div>
+        </section>
+
+        <section class="bloco" aria-labelledby="titulo-lista-clientes">
+            <div class="bloco-topo">
+                <h2 id="titulo-lista-clientes">Clientes cadastrados <span class="contador" id="total-clientes"></span></h2>
+                <label class="filtro">Buscar
+                    <input type="search" id="busca-cliente" placeholder="Nome, documento, cidade...">
+                </label>
+            </div>
+            <div class="tabela-rolagem">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF/CNPJ</th>
+                            <th>Telefone</th>
+                            <th>E-mail</th>
+                            <th>Cidade</th>
+                            <th class="num">Produtos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-clientes"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/cadastros-comum.js"></script>
+    <script src="/js/clientes.js"></script>
+</body>
+</html>

@@ -5,24 +5,25 @@
 const db = require('../../config/db');
 
 // 2. Criar a função de somar estoque
-async function somarEstoque(produtoId, enderecoId, quantidade) {
+// conexao (opcional): passe a conexão de uma transação para a operação fazer parte dela
+async function somarEstoque(produtoId, enderecoId, quantidade, conexao = db) {
     try {
         //Verificar se o produto já existe neste endereço
-        const [linhas] = await db.execute(
+        const [linhas] = await conexao.execute(
             'SELECT quantidade FROM estoque WHERE produto_id = ? AND endereco_id = ?',
             [produtoId, enderecoId]
         );
 
         if (linhas.length > 0) {
             //O produto já existe. Fazer um UPDATE somando a quantidade.
-            await db.execute(
+            await conexao.execute(
                 'UPDATE estoque SET quantidade = quantidade + ? WHERE produto_id = ? AND endereco_id = ?',
                 [quantidade, produtoId, enderecoId]
             )
             
         } else {
             //O produto não existe neste endereço. Fazer um INSERT.
-            await db.execute(
+            await conexao.execute(
                 'INSERT INTO estoque (produto_id, endereco_id, quantidade) VALUES ( ?, ?, ?)',
                 [produtoId, enderecoId, quantidade]
             )
@@ -37,10 +38,11 @@ async function somarEstoque(produtoId, enderecoId, quantidade) {
 }
 
 // 2.1. Criar a função de subtrair estoque
-async function subtrairEstoque(produtoId, enderecoId, quantidade) {
+// conexao (opcional): passe a conexão de uma transação para a operação fazer parte dela
+async function subtrairEstoque(produtoId, enderecoId, quantidade, conexao = db) {
     try {
         //Verificar se o produto já existe neste endereço
-        const [linhas] = await db.execute(
+        const [linhas] = await conexao.execute(
             'SELECT quantidade FROM estoque WHERE produto_id = ? AND endereco_id = ?',
             [produtoId, enderecoId]
         );
@@ -52,7 +54,7 @@ async function subtrairEstoque(produtoId, enderecoId, quantidade) {
             quantidade = linhas[0].quantidade - quantidade
             //Verificando se a quantidade vai ser suficiente
             if (quantidade >= 0) {
-                await db.execute(
+                await conexao.execute(
                     'UPDATE estoque SET quantidade = ? WHERE produto_id = ? AND endereco_id = ?',
                 [quantidade, produtoId, enderecoId]
                 )
@@ -72,12 +74,30 @@ async function subtrairEstoque(produtoId, enderecoId, quantidade) {
     }
 }
 
+// Colunas devolvidas pela listagem (inclui os valores: custo médio, preço de venda e valor total em estoque)
+const SQL_ESTOQUE = `
+    SELECT
+        estoque.id,
+        estoque.produto_id,
+        estoque.endereco_id,
+        estoque.quantidade,
+        produtos.codigo,
+        produtos.nome,
+        produtos.unidade,
+        enderecos.codigo AS endereco_codigo,
+        produtos.custo_medio,
+        produtos.preco_venda,
+        ROUND(estoque.quantidade * produtos.custo_medio, 2) AS valor_total
+    FROM estoque
+    INNER JOIN produtos ON estoque.produto_id = produtos.id
+    INNER JOIN enderecos ON estoque.endereco_id = enderecos.id`;
+
 // 3. Criar a função de listar estoque
 async function listarEstoque(req, res) {
     try {
         //listar produto, endereco e quantidade
         const [linhas] = await db.execute(
-            'SELECT * FROM estoque INNER JOIN produtos ON estoque.produto_id = produtos.id INNER JOIN enderecos ON estoque.endereco_id = enderecos.id',
+            SQL_ESTOQUE + ' ORDER BY produtos.nome, enderecos.codigo'
         );
 
         //envia o pedido
@@ -96,7 +116,7 @@ async function saldoPorProduto(req, res) {
         const { id } = req.params;
         //listar produto, endereco e quantidade
         const [linhas] = await db.execute(
-            'SELECT * FROM estoque INNER JOIN produtos ON estoque.produto_id = produtos.id INNER JOIN enderecos ON estoque.endereco_id = enderecos.id WHERE estoque.produto_id = ?',
+            SQL_ESTOQUE + ' WHERE estoque.produto_id = ? ORDER BY enderecos.codigo',
             [id]
         );
 

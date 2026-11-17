@@ -5,74 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WMS - Saída de Mercadoria</title>
   <link rel="stylesheet" href="/css/style.css">
-  <!-- Estilos só desta tela (Gabriel) -->
-  <style>
-    .form-saida { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
-    .form-saida label, #filtro-status { display: block; }
-    .form-saida label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
-    section { margin-bottom: 32px; }
-    .msg { padding: 8px 12px; border-radius: 4px; margin: 8px 0; }
-    .msg.sucesso { background: #e3f6e8; color: #17653a; }
-    .msg.erro { background: #fde8e8; color: #9b1c1c; }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-  </style>
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/modulos.css">
 </head>
-<body>
+<body class="pagina-menu pagina-modulo" data-modulo="saida">
   <!--
     TELA: Saída de Mercadoria  —  Responsável: GABRIEL
-    PASSO A PASSO
-    1. Criar formulário com: select de produto, quantidade, cliente
-       e botão "Criar pedido".
-    2. Abaixo: tabela de pedidos com coluna de status e botão "Expedir".
-    3. Criar um filtro por status (Todos / Pendente / Expedido).
-    4. A lógica fica no arquivo public/js/saida.js.
+    Topo e barra lateral são montados pelo /js/layout.js (mesmo visual do Painel).
+    A lógica fica no arquivo public/js/saida.js.
   -->
 
-  <header>
-    <a href="/index.html">WMS</a>
-    <h1>Saída de Mercadoria</h1>
-  </header>
-
   <main>
-    <section>
-      <h2>Novo pedido de saída</h2>
+    <div class="cabecalho">
+      <h1>Saída de mercadoria</h1>
       <p id="usuario-info"></p>
-      <form id="form-pedido" class="form-saida" novalidate>
-        <label>Produto
-          <select id="produto" required></select>
-        </label>
-        <label>Endereço
-          <select id="endereco" required></select>
-        </label>
-        <label>Quantidade
-          <input id="quantidade" type="number" min="1" step="1" required>
-        </label>
-        <label>Cliente
-          <input id="cliente" type="text" maxlength="150" required>
-        </label>
-        <button type="submit" id="btn-criar">Criar pedido</button>
-      </form>
-      <div id="mensagem" role="status"></div>
+    </div>
+
+    <section class="bloco" aria-labelledby="titulo-novo-pedido">
+      <div class="bloco-topo">
+        <h2 id="titulo-novo-pedido">Novo pedido de saída</h2>
+      </div>
+
+      <div class="bloco-corpo">
+        <form id="form-pedido" class="formulario" novalidate>
+          <div class="campo">
+            <label for="cliente">Cliente</label>
+            <select id="cliente" required></select>
+          </div>
+          <div class="campo">
+            <label for="produto">Produto do cliente</label>
+            <select id="produto" required disabled>
+              <option value="">Escolha o cliente primeiro</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="endereco">Endereço</label>
+            <select id="endereco" required></select>
+          </div>
+          <div class="campo">
+            <label for="quantidade">Quantidade</label>
+            <input id="quantidade" type="number" min="1" step="1" required>
+          </div>
+          <div class="campo">
+            <label for="preco">Preço unit. (R$)</label>
+            <input id="preco" type="number" min="0" step="0.01" placeholder="Preço do cadastro">
+          </div>
+          <div class="botoes">
+            <button type="submit" id="btn-criar">Criar pedido</button>
+          </div>
+        </form>
+        <div id="mensagem" class="aviso" role="status"></div>
+      </div>
     </section>
 
-    <section>
-      <h2>Pedidos</h2>
-      <label>Filtrar por status
-        <select id="filtro-status">
-          <option value="">Todos</option>
-          <option value="pendente">Pendente</option>
-          <option value="enviado">Expedido (enviado)</option>
-        </select>
-      </label>
-      <table>
-        <thead>
-          <tr><th>Nº</th><th>Produto</th><th>Endereço</th><th>Qtd</th><th>Cliente</th><th>Status</th><th>Data</th><th>Ação</th></tr>
-        </thead>
-        <tbody id="tabela-pedidos"></tbody>
-      </table>
+    <section class="bloco" aria-labelledby="titulo-pedidos">
+      <div class="bloco-topo">
+        <h2 id="titulo-pedidos">Pedidos</h2>
+        <label class="filtro">Status
+          <select id="filtro-status">
+            <option value="">Todos</option>
+            <option value="pendente">Pendente</option>
+            <option value="enviado">Expedido</option>
+          </select>
+        </label>
+      </div>
+      <div class="tabela-rolagem">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Produto</th>
+              <th>Endereço</th>
+              <th class="num">Qtd</th>
+              <th class="num">Preço unit.</th>
+              <th class="num">Valor total</th>
+              <th class="num">Margem</th>
+              <th>Cliente</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-pedidos"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
+  <script src="/js/layout.js"></script>
   <script src="/js/saida.js"></script>
 </body>
 </html>
